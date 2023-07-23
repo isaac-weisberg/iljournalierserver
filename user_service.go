@@ -2,15 +2,15 @@ package main
 
 import "github.com/gofrs/uuid"
 
-type UserService struct {
-	dbService DatabaseService
+type userService struct {
+	dbService *databaseService
 }
 
-func NewUserService(dbService DatabaseService) UserService {
-	return UserService{dbService: dbService}
+func newUserService(dbService *databaseService) userService {
+	return userService{dbService: dbService}
 }
 
-func (controller *UserService) createUser() (string, error) {
+func (userService *userService) createUser() (string, error) {
 	uniqueId, err := uuid.NewV4()
 
 	if err != nil {

@@ -1,14 +1,14 @@
 package main
 
-type UserController struct {
-	userService *UserService
+type userController struct {
+	userService *userService
 }
 
-func NewUserController(userService *UserService) UserController {
-	return UserController{userService: userService}
+func newUserController(userService *userService) userController {
+	return userController{userService: userService}
 }
 
-func (uc *UserController) createUser(wAndR WriterAndRequest) {
+func (uc *userController) createUser(wAndR writerAndRequest) {
 	userId, err := uc.userService.createUser()
 
 	if err != nil {

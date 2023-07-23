@@ -5,25 +5,25 @@ import (
 	"strings"
 )
 
-type MainRouter struct {
-	userController *UserController
+type mainRouter struct {
+	userController *userController
 }
 
-func NewMainRouter(di DIContainer) MainRouter {
-	userController := NewUserController(&di.userService)
+func newMainRouter(di *diContainer) mainRouter {
+	userController := newUserController(&di.userService)
 
-	mainRouter := MainRouter{userController: &userController}
+	mainRouter := mainRouter{userController: &userController}
 
 	return mainRouter
 }
 
-func (router *MainRouter) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	writerAndRequest := WriterAndRequest{w, r}
+func (router *mainRouter) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	writerAndRequest := writerAndRequest{w, r}
 
 	inAppRoute, found := strings.CutPrefix(r.URL.Path, "/iljournalierserver")
 
 	if !found {
-		router.Respond404(writerAndRequest)
+		router.respond404(writerAndRequest)
 		return
 	}
 
@@ -33,13 +33,13 @@ func (router *MainRouter) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		case "/user/create":
 			router.userController.createUser(writerAndRequest)
 		default:
-			router.Respond404(writerAndRequest)
+			router.respond404(writerAndRequest)
 		}
 	default:
-		router.Respond404(writerAndRequest)
+		router.respond404(writerAndRequest)
 	}
 }
 
-func (router *MainRouter) Respond404(writerAndRequest WriterAndRequest) {
+func (router *mainRouter) respond404(writerAndRequest writerAndRequest) {
 	writerAndRequest.w.WriteHeader(404)
 }

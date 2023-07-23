@@ -2,7 +2,7 @@ package main
 
 import "net/http"
 
-type WriterAndRequest struct {
+type writerAndRequest struct {
 	w http.ResponseWriter
 	r *http.Request
 }

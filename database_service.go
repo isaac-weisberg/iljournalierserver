@@ -1,23 +1,35 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 
 	_ "github.com/mattn/go-sqlite3"
 )
 
-type DatabaseService struct {
+type databaseService struct {
 	db *sql.DB
 }
 
-func NewDatabaseService() (DatabaseService, error) {
-	db, err := sql.Open("go-sqllite3", "iljournalierAlpha")
+func newDatabaseService(ctx context.Context) (*databaseService, error) {
+	db, err := sql.Open("sqlite3", "iljournalierAlpha")
 
 	if err != nil {
-		return DatabaseService{}, err
+		return nil, err
 	}
 
-	databaseService := DatabaseService{db}
+	err = db.Ping()
 
-	return databaseService, nil
+	if err != nil {
+		return nil, err
+	}
+
+	err = migrateDatabase(ctx, db)
+	if err != nil {
+		return nil, err
+	}
+
+	databaseService := databaseService{db}
+
+	return &databaseService, nil
 }
