@@ -1,21 +1,7 @@
 package main
 
-import (
-	"fmt"
-	"strings"
-)
-
-var _migrationsTableName = "migrations"
-
-func migrationsTableSql(sql string) string {
-	if strings.Count(sql, "%s") != 1 {
-		panic("migrationsTableSql Invalid SQL")
-	}
-	return fmt.Sprintf(sql, _migrationsTableName)
-}
-
 func (transaction transaction) createMigrationsTable() error {
-	sql := migrationsTableSql("CREATE TABLE IF NOT EXISTS %s (version TEXT NOT NULL PRIMARY KEY)")
+	sql := "CREATE TABLE IF NOT EXISTS migrations (version TEXT NOT NULL PRIMARY KEY)"
 	_, err := transaction.exec(sql)
 	if err != nil {
 		return j(e("createMigrationsTable"), err)
@@ -24,7 +10,7 @@ func (transaction transaction) createMigrationsTable() error {
 }
 
 func (transaction transaction) hasVersionBeenMigrated(version string) (bool, error) {
-	sql := migrationsTableSql("SELECT COUNT() FROM %s WHERE version == ?")
+	sql := "SELECT COUNT() FROM migrations WHERE version == ?"
 
 	row := transaction.queryRow(sql, version)
 
@@ -42,7 +28,7 @@ func (transaction transaction) hasVersionBeenMigrated(version string) (bool, err
 }
 
 func (transaction transaction) markVersionAsMigrated(version string) error {
-	sql := migrationsTableSql("INSERT INTO %s VALUES (?)")
+	sql := "INSERT INTO migrations VALUES (?)"
 	_, err := transaction.exec(sql, version)
 	if err != nil {
 		return j(

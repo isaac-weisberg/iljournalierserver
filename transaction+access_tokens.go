@@ -1,23 +1,13 @@
 package main
 
-var accessTokensTableReplacePair = ReplacePair{"🪙", "accessTokens"}
-
-func accessTokensSql(sql string) string {
-	return replace(sql, accessTokensTableReplacePair)
-}
-
 func (transaction transaction) createAccessTokensTable() error {
-	sql := replace(
-		`CREATE TABLE IF NOT EXISTS 🪙 
+	sql := `CREATE TABLE IF NOT EXISTS accessTokens 
 		(
 			id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
 			userId INTEGER NOT NULL, 
-			token TEXT NOT NULL, 
-			FOREIGN KEY(userId) REFERENCES 🧑(id)
-		)`,
-		accessTokensTableReplacePair,
-		usersTableReplacePair,
-	)
+			token TEXT NOT NULL UNIQUE, 
+			FOREIGN KEY(userId) REFERENCES users(id)
+		)`
 
 	_, err := transaction.exec(sql)
 	if err != nil {
