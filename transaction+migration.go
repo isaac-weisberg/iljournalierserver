@@ -15,7 +15,7 @@ func migrationsTableSql(sql string) string {
 }
 
 func (transaction transaction) createMigrationsTable() error {
-	sql := migrationsTableSql("CREATE TABLE IF NOT EXISTS %s (version INT NOT NULL, PRIMARY KEY (version))")
+	sql := migrationsTableSql("CREATE TABLE IF NOT EXISTS %s (version TEXT NOT NULL PRIMARY KEY)")
 	_, err := transaction.exec(sql)
 	if err != nil {
 		return j(e("createMigrationsTable"), err)
