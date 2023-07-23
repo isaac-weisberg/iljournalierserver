@@ -24,12 +24,19 @@ func newDatabaseService(ctx context.Context) (*databaseService, error) {
 		return nil, err
 	}
 
-	err = migrateDatabase(ctx, db)
+	databaseService := databaseService{db}
+
+	return &databaseService, nil
+}
+
+func (databaseService databaseService) beginTx(ctx context.Context) (*transaction, error) {
+	tx, err := databaseService.db.BeginTx(ctx, nil)
+
 	if err != nil {
 		return nil, err
 	}
 
-	databaseService := databaseService{db}
+	transaction := newTransaction(ctx, tx)
 
-	return &databaseService, nil
+	return &transaction, nil
 }

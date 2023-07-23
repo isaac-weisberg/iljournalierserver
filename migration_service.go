@@ -2,20 +2,46 @@ package main
 
 import (
 	"context"
-	"database/sql"
+	"fmt"
 )
 
-var createMigrationsTable = "CREATE TABLE IF NOT EXISTS migrations (version INT NOT NULL, PRIMARY KEY (version))"
+const (
+	migrationVersion1 = "1"
+)
 
-func migrateDatabase(ctx context.Context, db *sql.DB) error {
-	tx, err := db.BeginTx(ctx, nil)
+var migrateDatabaseError = e("migrateDatabase failed")
+
+func migrateDatabase(ctx context.Context, databaseService databaseService) error {
+	transaction, err := databaseService.beginTx(ctx)
 	if err != nil {
-		return err
+		return j(migrateDatabaseError, err)
+	}
+	defer transaction.rollBack()
+
+	err = transaction.createMigrationsTable()
+	if err != nil {
+		return j(migrateDatabaseError, err)
 	}
 
-	_, err = tx.ExecContext(ctx, createMigrationsTable)
+	v1Migrated, err := transaction.hasVersionBeenMigrated(migrationVersion1)
 	if err != nil {
-		return err
+		return j(migrateDatabaseError, err)
+	}
+
+	if !v1Migrated {
+		fmt.Println("IlJournalierServer: Migration", migrationVersion1, "migrating...")
+		err = transaction.markVersionAsMigrated(migrationVersion1)
+		if err != nil {
+			return j(migrateDatabaseError, err)
+		}
+	} else {
+		fmt.Println("IlJournalierServer: Migration", migrationVersion1, "already applied")
+	}
+
+	err = transaction.commit()
+
+	if err != nil {
+		return j(migrateDatabaseError, err)
 	}
 
 	return nil

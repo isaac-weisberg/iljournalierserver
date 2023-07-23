@@ -7,11 +7,18 @@ type diContainer struct {
 	userService     userService
 }
 
+var newDIContainerError = e("newDIContainer error")
+
 func newDIContainer(ctx context.Context) (*diContainer, error) {
 	databaseService, err := newDatabaseService(ctx)
 
 	if err != nil {
-		return nil, err
+		return nil, j(newDIContainerError, err)
+	}
+
+	err = migrateDatabase(ctx, *databaseService)
+	if err != nil {
+		return nil, j(newDIContainerError, err)
 	}
 
 	userService := newUserService(databaseService)

@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	fmt.Println("IlJournalierServer start!")
+	fmt.Println("IlJournalierServer: start!")
 
 	ctx := context.Background()
 
@@ -30,10 +30,10 @@ func main() {
 	server := http.Server{Addr: listenAddress, Handler: mux}
 
 	go func() {
-		fmt.Println("IlJournalierServer will listen", listenAddress)
+		fmt.Println("IlJournalierServer: will listen", listenAddress)
 		err := server.ListenAndServe()
 		if err != nil {
-			println("IlJournalierServer returned", err.Error())
+			println("IlJournalierServer: returned", err.Error())
 		}
 	}()
 
@@ -46,8 +46,8 @@ func main() {
 	defer cancel()
 	err = server.Shutdown(ctx)
 	if err != nil {
-		fmt.Println("IlJournalierServer shutting down", err.Error())
+		fmt.Println("IlJournalierServer: shutting down", err.Error())
 	} else {
-		fmt.Println("IlJournalierServer shutting down")
+		fmt.Println("IlJournalierServer: shutting down")
 	}
 }
