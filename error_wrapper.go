@@ -1,7 +1,9 @@
 package main
 
+import "errors"
+
 func createErrorWrapper(message string) func(err error) error {
 	return func(err error) error {
-		return j(e(message), err)
+		return errors.Join(errors.New(message), err)
 	}
 }

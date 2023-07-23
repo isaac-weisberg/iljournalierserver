@@ -9,11 +9,8 @@ const (
 	migrationVersion1 = "1"
 )
 
-func migrateDatabaseError(err error) error {
-	return j(e("migrateDatabase failed"), err)
-}
-
 func migrateDatabase(ctx context.Context, databaseService databaseService) error {
+	migrateDatabaseError := createErrorWrapper("migrateDatabase failed")
 
 	transaction, err := databaseService.beginTx(ctx)
 	if err != nil {

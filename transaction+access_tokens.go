@@ -1,6 +1,7 @@
 package main
 
 func (transaction transaction) createAccessTokensTable() error {
+	wrapError := createErrorWrapper("txCreateAccessTokensTable")
 	sql := `CREATE TABLE IF NOT EXISTS accessTokens 
 		(
 			id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
@@ -11,7 +12,7 @@ func (transaction transaction) createAccessTokensTable() error {
 
 	_, err := transaction.exec(sql)
 	if err != nil {
-		return j(e("createAccessTokensTable"), err)
+		return wrapError(err)
 	}
 
 	return nil
