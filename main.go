@@ -5,9 +5,15 @@ import (
 )
 
 func main() {
-	mux := http.NewServeMux()
+	diContainer, err := NewDIContainer()
 
-	mainRouter := MainRouter{}
+	if err != nil {
+		panic(err)
+	}
+
+	mainRouter := NewMainRouter(diContainer)
+
+	mux := http.NewServeMux()
 
 	mux.Handle("/", &mainRouter)
 

@@ -9,6 +9,14 @@ type MainRouter struct {
 	userController *UserController
 }
 
+func NewMainRouter(di DIContainer) MainRouter {
+	userController := NewUserController(&di.userService)
+
+	mainRouter := MainRouter{userController: &userController}
+
+	return mainRouter
+}
+
 func (router *MainRouter) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	writerAndRequest := WriterAndRequest{w, r}
 

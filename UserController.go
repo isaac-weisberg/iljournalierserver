@@ -4,6 +4,10 @@ type UserController struct {
 	userService *UserService
 }
 
+func NewUserController(userService *UserService) UserController {
+	return UserController{userService: userService}
+}
+
 func (uc *UserController) createUser(wAndR WriterAndRequest) {
 	userId, err := uc.userService.createUser()
 
