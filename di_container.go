@@ -7,23 +7,22 @@ type diContainer struct {
 	userService     userService
 }
 
-func newDIContainerError(err error) error {
-	return j(e("newDIContainer error"), err)
-}
-
 func newDIContainer(ctx context.Context) (*diContainer, error) {
+	wrapError := createErrorWrapper("newDIContainer error")
 	databaseService, err := newDatabaseService(ctx)
 
 	if err != nil {
-		return nil, newDIContainerError(err)
+		return nil, wrapError(err)
 	}
 
 	err = migrateDatabase(ctx, *databaseService)
 	if err != nil {
-		return nil, newDIContainerError(err)
+		return nil, wrapError(err)
 	}
 
-	userService := newUserService(databaseService)
+	randomIdService := newRandomIdService()
+
+	userService := newUserService(databaseService, &randomIdService)
 
 	var di = diContainer{
 		databaseService,

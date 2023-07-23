@@ -16,3 +16,15 @@ func (transaction transaction) createAccessTokensTable() error {
 
 	return nil
 }
+
+func (transaction transaction) createAccessToken(userId int64, accessToken string) error {
+	wrapError := createErrorWrapper("txCreateAccessTokenError")
+	sql := "INSERT INTO accessTokens (userId, token) VALUES (?, ?)"
+
+	_, err := transaction.exec(sql, userId, accessToken)
+	if err != nil {
+		return wrapError(err)
+	}
+
+	return nil
+}

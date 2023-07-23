@@ -18,12 +18,10 @@ func newMainRouter(di *diContainer) mainRouter {
 }
 
 func (router *mainRouter) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	writerAndRequest := writerAndRequest{w, r}
-
 	inAppRoute, found := strings.CutPrefix(r.URL.Path, "/iljournalierserver")
 
 	if !found {
-		router.respond404(writerAndRequest)
+		router.respond404(w, r)
 		return
 	}
 
@@ -31,15 +29,15 @@ func (router *mainRouter) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	case http.MethodPost:
 		switch inAppRoute {
 		case "/user/create":
-			router.userController.createUser(writerAndRequest)
+			router.userController.createUser(w, r)
 		default:
-			router.respond404(writerAndRequest)
+			router.respond404(w, r)
 		}
 	default:
-		router.respond404(writerAndRequest)
+		router.respond404(w, r)
 	}
 }
 
-func (router *mainRouter) respond404(writerAndRequest writerAndRequest) {
-	writerAndRequest.w.WriteHeader(404)
+func (router *mainRouter) respond404(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(404)
 }

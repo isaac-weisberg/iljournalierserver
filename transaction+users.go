@@ -10,3 +10,21 @@ func (transaction transaction) createUsersTable() error {
 
 	return nil
 }
+
+func (transaction transaction) createUser(magicKey string) (*int64, error) {
+	errorWrap := createErrorWrapper("tx.createUser")
+
+	sql := "INSERT INTO users (magicKey) VALUES (?)"
+
+	result, err := transaction.exec(sql, magicKey)
+	if err != nil {
+		return nil, errorWrap(err)
+	}
+
+	lastIndertedId, err := result.LastInsertId()
+	if err != nil {
+		return nil, errorWrap(err)
+	}
+
+	return &lastIndertedId, nil
+}
