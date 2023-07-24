@@ -49,5 +49,8 @@ func (userService *userService) createUser(ctx context.Context) (*CreateUserSucc
 		return nil, j(err, "commit failed")
 	}
 
-	return &CreateUserSuccess{accessToken: *accessToken, magicKey: *magicKey}, nil
+	return &CreateUserSuccess{
+		accessToken: *accessToken,
+		magicKey:    *magicKey,
+	}, nil
 }

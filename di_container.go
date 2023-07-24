@@ -3,8 +3,9 @@ package main
 import "context"
 
 type diContainer struct {
-	databaseService *databaseService
-	userService     userService
+	databaseService     *databaseService
+	userService         *userService
+	moreMessagesService *moreMessagesService
 }
 
 func newDIContainer(ctx context.Context) (*diContainer, error) {
@@ -14,7 +15,7 @@ func newDIContainer(ctx context.Context) (*diContainer, error) {
 		return nil, j(err, "database creation failed")
 	}
 
-	err = migrateDatabase(ctx, *databaseService)
+	err = migrateDatabase(ctx, databaseService)
 	if err != nil {
 		return nil, j(err, "database migration failed")
 	}
@@ -23,9 +24,12 @@ func newDIContainer(ctx context.Context) (*diContainer, error) {
 
 	userService := newUserService(databaseService, &randomIdService)
 
+	moreMessagesService := newMoreMessagesService(databaseService)
+
 	var di = diContainer{
 		databaseService,
-		userService,
+		&userService,
+		&moreMessagesService,
 	}
 	return &di, nil
 }

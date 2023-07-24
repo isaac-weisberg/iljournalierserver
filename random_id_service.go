@@ -9,7 +9,7 @@ func newRandomIdService() randomIdService {
 	return randomIdService{}
 }
 
-func (randomIdService randomIdService) generateRandomId() (*string, error) {
+func (randomIdService *randomIdService) generateRandomId() (*string, error) {
 	uniqueId, err := uuid.NewV4()
 
 	if err != nil {

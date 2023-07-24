@@ -2,7 +2,7 @@ package main
 
 import "fmt"
 
-func (transaction transaction) createMigrationsTable() error {
+func (transaction *transaction) createMigrationsTable() error {
 	sql := "CREATE TABLE IF NOT EXISTS migrations (version TEXT NOT NULL PRIMARY KEY)"
 	_, err := transaction.exec(sql)
 	if err != nil {
@@ -11,7 +11,7 @@ func (transaction transaction) createMigrationsTable() error {
 	return err
 }
 
-func (transaction transaction) hasVersionBeenMigrated(version string) (bool, error) {
+func (transaction *transaction) hasVersionBeenMigrated(version string) (bool, error) {
 	sql := "SELECT COUNT() FROM migrations WHERE version == ?"
 
 	row := transaction.queryRow(sql, version)
@@ -26,7 +26,7 @@ func (transaction transaction) hasVersionBeenMigrated(version string) (bool, err
 	return count == 1, nil
 }
 
-func (transaction transaction) markVersionAsMigrated(version string) error {
+func (transaction *transaction) markVersionAsMigrated(version string) error {
 	sql := "INSERT INTO migrations VALUES (?)"
 	_, err := transaction.exec(sql, version)
 	if err != nil {

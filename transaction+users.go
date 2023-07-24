@@ -2,7 +2,7 @@ package main
 
 import "fmt"
 
-func (transaction transaction) createUsersTable() error {
+func (transaction *transaction) createUsersTable() error {
 	sql := "CREATE TABLE IF NOT EXISTS users (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, magicKey TEXT NOT NULL UNIQUE)"
 
 	_, err := transaction.exec(sql)
@@ -13,7 +13,7 @@ func (transaction transaction) createUsersTable() error {
 	return nil
 }
 
-func (transaction transaction) createUser(magicKey string) (*int64, error) {
+func (transaction *transaction) createUser(magicKey string) (*int64, error) {
 	sql := "INSERT INTO users (magicKey) VALUES (?)"
 
 	result, err := transaction.exec(sql, magicKey)

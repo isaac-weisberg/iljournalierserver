@@ -9,7 +9,7 @@ const (
 	migrationVersion1 = "1"
 )
 
-func migrateDatabase(ctx context.Context, databaseService databaseService) error {
+func migrateDatabase(ctx context.Context, databaseService *databaseService) error {
 	transaction, err := databaseService.beginTx(ctx)
 	if err != nil {
 		return j(err, "transaction creation error")

@@ -6,13 +6,18 @@ import (
 )
 
 type mainRouter struct {
-	userController *userController
+	userController         *userController
+	moreMessagesController *moreMessagesController
 }
 
 func newMainRouter(di *diContainer) mainRouter {
-	userController := newUserController(&di.userService)
+	userController := newUserController(di.userService)
+	moreMessagesController := newMoreMessagesController(di.moreMessagesService)
 
-	mainRouter := mainRouter{userController: &userController}
+	mainRouter := mainRouter{
+		userController:         &userController,
+		moreMessagesController: &moreMessagesController,
+	}
 
 	return mainRouter
 }
@@ -31,6 +36,8 @@ func (router *mainRouter) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		switch inAppRoute {
 		case "/user/create":
 			router.userController.createUser(w, r)
+		case "/messages/add":
+			router.moreMessagesController.addMoreMessage(w, r)
 		default:
 			router.respond404(w, r)
 		}
