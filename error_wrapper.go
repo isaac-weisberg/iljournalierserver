@@ -2,8 +2,6 @@ package main
 
 import "errors"
 
-func createErrorWrapper(message string) func(err error) error {
-	return func(err error) error {
-		return errors.Join(errors.New(message), err)
-	}
+func j(err error, msg string) error {
+	return errors.Join(errors.New(msg), err)
 }

@@ -1,7 +1,8 @@
 package main
 
+import "fmt"
+
 func (transaction transaction) createAccessTokensTable() error {
-	wrapError := createErrorWrapper("txCreateAccessTokensTable")
 	sql := `CREATE TABLE IF NOT EXISTS accessTokens 
 		(
 			id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
@@ -12,19 +13,18 @@ func (transaction transaction) createAccessTokensTable() error {
 
 	_, err := transaction.exec(sql)
 	if err != nil {
-		return wrapError(err)
+		return j(err, "create table failed")
 	}
 
 	return nil
 }
 
 func (transaction transaction) createAccessToken(userId int64, accessToken string) error {
-	wrapError := createErrorWrapper("txCreateAccessTokenError")
 	sql := "INSERT INTO accessTokens (userId, token) VALUES (?, ?)"
 
 	_, err := transaction.exec(sql, userId, accessToken)
 	if err != nil {
-		return wrapError(err)
+		return j(err, fmt.Sprintf("insert failed userId=%v accessToken=%v", userId, accessToken))
 	}
 
 	return nil

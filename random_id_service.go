@@ -10,12 +10,10 @@ func newRandomIdService() randomIdService {
 }
 
 func (randomIdService randomIdService) generateRandomId() (*string, error) {
-	wrapError := createErrorWrapper("randomIdServiceError")
-
 	uniqueId, err := uuid.NewV4()
 
 	if err != nil {
-		return nil, wrapError(err)
+		return nil, j(err, "uuid creation error")
 	}
 
 	str := uniqueId.String()

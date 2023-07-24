@@ -8,16 +8,15 @@ type diContainer struct {
 }
 
 func newDIContainer(ctx context.Context) (*diContainer, error) {
-	wrapError := createErrorWrapper("newDIContainer error")
 	databaseService, err := newDatabaseService(ctx)
 
 	if err != nil {
-		return nil, wrapError(err)
+		return nil, j(err, "database creation failed")
 	}
 
 	err = migrateDatabase(ctx, *databaseService)
 	if err != nil {
-		return nil, wrapError(err)
+		return nil, j(err, "database migration failed")
 	}
 
 	randomIdService := newRandomIdService()

@@ -19,36 +19,34 @@ type CreateUserSuccess struct {
 }
 
 func (userService *userService) createUser(ctx context.Context) (*CreateUserSuccess, error) {
-	wrapError := createErrorWrapper("userServiceCreateUserError")
-
 	magicKey, err := userService.randomIdService.generateRandomId()
 	if err != nil {
-		return nil, wrapError(err)
+		return nil, j(err, "generate magicKey failed")
 	}
 	accessToken, err := userService.randomIdService.generateRandomId()
 	if err != nil {
-		return nil, wrapError(err)
+		return nil, j(err, "generate accessToken failed")
 	}
 
 	tx, err := userService.dbService.beginTx(ctx)
 	defer tx.rollBack()
 	if err != nil {
-		return nil, wrapError(err)
+		return nil, j(err, "start tx failed")
 	}
 
 	userId, err := tx.createUser(*magicKey)
 	if err != nil {
-		return nil, wrapError(err)
+		return nil, j(err, "create user failed")
 	}
 
 	err = tx.createAccessToken(*userId, *accessToken)
 	if err != nil {
-		return nil, wrapError(err)
+		return nil, j(err, "create accessToken failed")
 	}
 
 	err = tx.commit()
 	if err != nil {
-		return nil, wrapError(err)
+		return nil, j(err, "commit failed")
 	}
 
 	return &CreateUserSuccess{accessToken: *accessToken, magicKey: *magicKey}, nil
