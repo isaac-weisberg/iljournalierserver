@@ -16,30 +16,21 @@ var userNotFoundForAccessToken = e("userNotFoundForAccessToken")
 var userNotFoundForMagicKey = e("userNotFoundForMagicKey")
 
 func (moreMessagesService *moreMessagesService) addMessage(ctx context.Context, accessToken string, msg string) error {
-	tx, err := moreMessagesService.databaseService.beginTx(ctx)
+	return beginTxBlockVoid(moreMessagesService.databaseService, ctx, func(tx *transaction) error {
+		userId, err := tx.findUserIdForAccessToken(accessToken)
+		if err != nil {
+			return j(err, "find user for accessToken failed")
+		}
 
-	if err != nil {
-		return j(err, "tx create failed")
-	}
+		if userId == nil {
+			return userNotFoundForAccessToken
+		}
 
-	userId, err := tx.findUserIdForAccessToken(accessToken)
-	if err != nil {
-		return j(err, "find user for accessToken failed")
-	}
+		err = tx.addMoreMessage(*userId, msg)
+		if err != nil {
+			return j(err, "add more message failed")
+		}
 
-	if userId == nil {
-		return userNotFoundForAccessToken
-	}
-
-	err = tx.addMoreMessage(*userId, msg)
-	if err != nil {
-		return j(err, "add more message failed")
-	}
-
-	err = tx.commit()
-	if err != nil {
-		return j(err, "commit failed")
-	}
-
-	return nil
+		return nil
+	})
 }
