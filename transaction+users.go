@@ -28,3 +28,36 @@ func (transaction *transaction) createUser(magicKey string) (*int64, error) {
 
 	return &lastIndertedId, nil
 }
+
+func (transaction *transaction) findUserForMagicKey(magicKey string) (*int64, error) {
+	sql := "SELECT (id) FROM users WHERE magicKey = ?"
+
+	rows, err := transaction.query(sql, magicKey)
+	if err != nil {
+		return nil, j(err, "selecting failed")
+	}
+
+	var userIds []int64
+	for rows.Next() {
+		var userId int64
+		err = rows.Scan(&userId)
+		if err != nil {
+			return nil, j(err, "scanning row failed")
+		}
+		userIds = append(userIds, userId)
+	}
+
+	err = rows.Err()
+	if err != nil {
+		return nil, j(err, "rows returned error")
+	}
+
+	switch len(userIds) {
+	case 0:
+		return nil, nil
+	case 1:
+		return &userIds[0], nil
+	default:
+		return &userIds[0], e("multiple users found for magic key, which is unexpected")
+	}
+}

@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"io"
 	"net/http"
 )
 
@@ -13,9 +14,9 @@ func newUserController(userService *userService) userController {
 	return userController{userService: userService}
 }
 
-type CreateUserResponseBody struct {
-	LoginKey    string `json:"loginKey"`
-	AccessToken string `json:"accessToken"`
+type createUserResponseBody struct {
+	accessTokenHavingObject
+	LoginKey string `json:"loginKey"`
 }
 
 func (uc *userController) createUser(w http.ResponseWriter, r *http.Request) {
@@ -26,9 +27,11 @@ func (uc *userController) createUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	createUserResBody := CreateUserResponseBody{
-		LoginKey:    user.magicKey,
-		AccessToken: user.accessToken,
+	createUserResBody := createUserResponseBody{
+		accessTokenHavingObject: accessTokenHavingObject{
+			AccessToken: user.accessToken,
+		},
+		LoginKey: user.magicKey,
 	}
 
 	bytes, err := json.Marshal(createUserResBody)
@@ -39,4 +42,54 @@ func (uc *userController) createUser(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(200)
 	w.Write(bytes)
+}
+
+type loginRequestBody struct {
+	LoginKey string `json:"loginKey"`
+}
+
+type loginResponseBody struct {
+	accessTokenHavingObject
+}
+
+func (uc *userController) login(w http.ResponseWriter, r *http.Request) {
+	body, err := io.ReadAll(r.Body)
+
+	if err != nil {
+		w.WriteHeader(500)
+		return
+	}
+
+	var loginRequestBody loginRequestBody
+	err = json.Unmarshal(body, &loginRequestBody)
+	if err != nil {
+		w.WriteHeader(500)
+		return
+	}
+
+	loginSuccess, err := uc.userService.login(loginRequestBody.LoginKey, r.Context())
+	if err != nil {
+		if is(err, userNotFoundForMagicKey) {
+			w.WriteHeader(418)
+			return
+		} else {
+			w.WriteHeader(500)
+			return
+		}
+	}
+
+	response := loginResponseBody{
+		accessTokenHavingObject{
+			AccessToken: loginSuccess.accessToken,
+		},
+	}
+
+	resData, err := json.Marshal(response)
+	if err != nil {
+		w.WriteHeader(500)
+		return
+	}
+
+	w.WriteHeader(200)
+	w.Write(resData)
 }

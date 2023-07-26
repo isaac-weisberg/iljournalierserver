@@ -52,7 +52,7 @@ func (transaction *transaction) findUserIdForAccessToken(accessToken string) (*i
 	}
 	err = rows.Err()
 	if err != nil {
-		return nil, j(err, "rows failed")
+		return nil, j(err, "rows returned error")
 	}
 
 	switch len(userIds) {

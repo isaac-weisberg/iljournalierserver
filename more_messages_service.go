@@ -13,6 +13,7 @@ func newMoreMessagesService(databaseService *databaseService) moreMessagesServic
 }
 
 var userNotFoundForAccessToken = e("userNotFoundForAccessToken")
+var userNotFoundForMagicKey = e("userNotFoundForMagicKey")
 
 func (moreMessagesService *moreMessagesService) addMessage(ctx context.Context, accessToken string, msg string) error {
 	tx, err := moreMessagesService.databaseService.beginTx(ctx)

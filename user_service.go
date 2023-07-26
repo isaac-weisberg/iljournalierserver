@@ -13,17 +13,18 @@ func newUserService(dbService *databaseService, randomIdService *randomIdService
 	return userService{dbService: dbService, randomIdService: randomIdService}
 }
 
-type CreateUserSuccess struct {
+type createUserSuccess struct {
 	accessToken string
 	magicKey    string
 }
 
-func (userService *userService) createUser(ctx context.Context) (*CreateUserSuccess, error) {
-	magicKey, err := userService.randomIdService.generateRandomId()
+func (userService *userService) createUser(ctx context.Context) (*createUserSuccess, error) {
+	magicKey, err := userService.generateMagicKey()
 	if err != nil {
 		return nil, j(err, "generate magicKey failed")
 	}
-	accessToken, err := userService.randomIdService.generateRandomId()
+
+	accessToken, err := userService.generateAccessToken()
 	if err != nil {
 		return nil, j(err, "generate accessToken failed")
 	}
@@ -49,8 +50,63 @@ func (userService *userService) createUser(ctx context.Context) (*CreateUserSucc
 		return nil, j(err, "commit failed")
 	}
 
-	return &CreateUserSuccess{
+	return &createUserSuccess{
 		accessToken: *accessToken,
 		magicKey:    *magicKey,
 	}, nil
+}
+
+type loginSuccess struct {
+	accessToken string
+}
+
+func (userService *userService) login(magicKey string, ctx context.Context) (*loginSuccess, error) {
+	tx, err := userService.dbService.beginTx(ctx)
+	if err != nil {
+		return nil, j(err, "creating tx failed")
+	}
+
+	userId, err := tx.findUserForMagicKey(magicKey)
+	if err != nil {
+		return nil, j(err, "find user for magicKey failed")
+	}
+
+	if userId == nil {
+		return nil, userNotFoundForMagicKey
+	}
+
+	accessToken, err := userService.generateAccessToken()
+	if err != nil {
+		return nil, j(err, "generate accessToken failed")
+	}
+
+	err = tx.createAccessToken(*userId, *accessToken)
+	if err != nil {
+		return nil, j(err, "creating access token entry failed")
+	}
+
+	err = tx.commit()
+	if err != nil {
+		return nil, j(err, "commit failed")
+	}
+
+	return &loginSuccess{accessToken: *accessToken}, nil
+}
+
+func (userService *userService) generateAccessToken() (*string, error) {
+	accessToken, err := userService.randomIdService.generateRandomId()
+	if err != nil {
+		return nil, j(err, "generateRandomId failed")
+	}
+
+	return accessToken, nil
+}
+
+func (userService *userService) generateMagicKey() (*string, error) {
+	magicKey, err := userService.randomIdService.generateRandomId()
+	if err != nil {
+		return nil, j(err, "generateRandomId failed")
+	}
+
+	return magicKey, nil
 }
