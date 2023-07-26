@@ -1,6 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"database/sql"
+	"fmt"
+)
 
 func (transaction *transaction) createUsersTable() error {
 	sql := "CREATE TABLE IF NOT EXISTS users (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, magicKey TEXT NOT NULL UNIQUE)"
@@ -30,34 +33,39 @@ func (transaction *transaction) createUser(magicKey string) (*int64, error) {
 }
 
 func (transaction *transaction) findUserForMagicKey(magicKey string) (*int64, error) {
-	sql := "SELECT (id) FROM users WHERE magicKey = ?"
+	query := "SELECT (id) FROM users WHERE magicKey = ?"
 
-	rows, err := transaction.query(sql, magicKey)
-	if err != nil {
-		return nil, j(err, "selecting failed")
-	}
-
-	var userIds []int64
-	for rows.Next() {
-		var userId int64
-		err = rows.Scan(&userId)
-		if err != nil {
-			return nil, j(err, "scanning row failed")
+	userIds, err := txQuery[[]int64](transaction, query, []any{magicKey}, func(rows *sql.Rows) (*[]int64, error) {
+		var userIds []int64
+		for rows.Next() {
+			var userId int64
+			err := rows.Scan(&userId)
+			if err != nil {
+				return nil, j(err, "scanning row failed")
+			}
+			userIds = append(userIds, userId)
 		}
-		userIds = append(userIds, userId)
-	}
 
-	err = rows.Err()
+		err := rows.Err()
+		if err != nil {
+			return nil, j(err, "rows returned error")
+		}
+
+		return &userIds, nil
+	})
+
 	if err != nil {
-		return nil, j(err, "rows returned error")
+		return nil, j(err, "txQuery failed")
 	}
 
-	switch len(userIds) {
+	switch len(*userIds) {
 	case 0:
 		return nil, nil
 	case 1:
-		return &userIds[0], nil
+		firstUserId := (*userIds)[0]
+		return &firstUserId, nil
 	default:
-		return &userIds[0], e("multiple users found for magic key, which is unexpected")
+		firstUserId := (*userIds)[0]
+		return &firstUserId, e("multiple users found for magic key, which is unexpected")
 	}
 }
