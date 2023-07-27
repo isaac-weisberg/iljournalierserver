@@ -16,7 +16,8 @@ func newMoreMessagesController(moreMessagesService *moreMessagesService) moreMes
 
 type addMoreMessageRequestBody struct {
 	accessTokenHavingObject
-	Msg string `json:"msg"`
+	UnixSeconds int64  `json:"unixSeconds"`
+	Msg         string `json:"msg"`
 }
 
 func (moreMessagesController *moreMessagesController) addMoreMessage(w http.ResponseWriter, r *http.Request) {
@@ -33,7 +34,12 @@ func (moreMessagesController *moreMessagesController) addMoreMessage(w http.Resp
 		return
 	}
 
-	err = moreMessagesController.moreMessagesService.addMessage(r.Context(), addMoreMsgBody.AccessToken, addMoreMsgBody.Msg)
+	err = moreMessagesController.moreMessagesService.addMessage(
+		r.Context(),
+		addMoreMsgBody.AccessToken,
+		addMoreMsgBody.UnixSeconds,
+		addMoreMsgBody.Msg,
+	)
 
 	if err != nil {
 		if is(err, userNotFoundForAccessToken) {
