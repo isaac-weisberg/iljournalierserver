@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"caroline-weisberg.fun/iljournalierserver/errors"
+	"caroline-weisberg.fun/iljournalierserver/transaction"
 )
 
 const (
@@ -12,13 +13,13 @@ const (
 )
 
 func migrateDatabase(ctx context.Context, databaseService *databaseService) error {
-	return beginTxBlockVoid(databaseService, ctx, func(tx *transaction) error {
-		err := tx.createMigrationsTable()
+	return beginTxBlockVoid(databaseService, ctx, func(tx *transaction.Transaction) error {
+		err := tx.CreateMigrationsTable()
 		if err != nil {
 			return errors.J(err, "migrations table creation error")
 		}
 
-		v1Migrated, err := tx.hasVersionBeenMigrated(migrationVersion1)
+		v1Migrated, err := tx.HasVersionBeenMigrated(migrationVersion1)
 		if err != nil {
 			return errors.J(err, "get hasVersionBeenMigrated failed")
 		}
@@ -26,32 +27,32 @@ func migrateDatabase(ctx context.Context, databaseService *databaseService) erro
 		if !v1Migrated {
 			fmt.Println("IlJournalierServer: Migration", migrationVersion1, "migrating...")
 
-			err = tx.createUsersTable()
+			err = tx.CreateUsersTable()
 			if err != nil {
 				return errors.J(err, "create users table error")
 			}
 
-			err = tx.createAccessTokensTable()
+			err = tx.CreateAccessTokensTable()
 			if err != nil {
 				return errors.J(err, "create access tokens table failed")
 			}
 
-			err = tx.createMoreMessagesTable()
+			err = tx.CreateMoreMessagesTable()
 			if err != nil {
 				return errors.J(err, "create more msgs table failed")
 			}
 
-			err = tx.createKnownFlagsTable()
+			err = tx.CreateKnownFlagsTable()
 			if err != nil {
 				return errors.J(err, "createKnownFlagsTable failed")
 			}
 
-			err = tx.createFlagsTable()
+			err = tx.CreateFlagsTable()
 			if err != nil {
 				return errors.J(err, "createFlagsTable failed")
 			}
 
-			err = tx.markVersionAsMigrated(migrationVersion1)
+			err = tx.MarkVersionAsMigrated(migrationVersion1)
 			if err != nil {
 				return errors.J(err, "markVersionAsMigrated error")
 			}

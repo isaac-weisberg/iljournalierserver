@@ -1,4 +1,4 @@
-package main
+package transaction
 
 import (
 	"database/sql"
@@ -7,7 +7,7 @@ import (
 	"caroline-weisberg.fun/iljournalierserver/errors"
 )
 
-func (transaction *transaction) createAccessTokensTable() error {
+func (transaction *Transaction) CreateAccessTokensTable() error {
 	sql := `CREATE TABLE accessTokens 
 		(
 			id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
@@ -16,7 +16,7 @@ func (transaction *transaction) createAccessTokensTable() error {
 			FOREIGN KEY(userId) REFERENCES users(id)
 		)`
 
-	_, err := transaction.exec(sql)
+	_, err := transaction.Exec(sql)
 	if err != nil {
 		return errors.J(err, "create table failed")
 	}
@@ -24,10 +24,10 @@ func (transaction *transaction) createAccessTokensTable() error {
 	return nil
 }
 
-func (transaction *transaction) createAccessToken(userId int64, accessToken string) error {
+func (transaction *Transaction) CreateAccessToken(userId int64, accessToken string) error {
 	query := "INSERT INTO accessTokens (userId, token) VALUES (?, ?)"
 
-	_, err := transaction.exec(query, userId, accessToken)
+	_, err := transaction.Exec(query, userId, accessToken)
 	if err != nil {
 		return errors.J(err, fmt.Sprintf("insert failed userId=%v accessToken=%v", userId, accessToken))
 	}
@@ -35,10 +35,10 @@ func (transaction *transaction) createAccessToken(userId int64, accessToken stri
 	return nil
 }
 
-func (transaction *transaction) findUserIdForAccessToken(accessToken string) (*int64, error) {
+func (transaction *Transaction) FindUserIdForAccessToken(accessToken string) (*int64, error) {
 	query := "SELECT userId FROM accessTokens WHERE token = ?"
 
-	userIds, err := txQuery[[]int64](transaction, query, []any{accessToken}, func(rows *sql.Rows) (*[]int64, error) {
+	userIds, err := TxQuery[[]int64](transaction, query, []any{accessToken}, func(rows *sql.Rows) (*[]int64, error) {
 		var userIds []int64
 		for rows.Next() {
 			var userId int64

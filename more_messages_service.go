@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"caroline-weisberg.fun/iljournalierserver/errors"
+	"caroline-weisberg.fun/iljournalierserver/transaction"
 )
 
 type moreMessagesService struct {
@@ -15,8 +16,8 @@ func newMoreMessagesService(databaseService *databaseService) moreMessagesServic
 }
 
 func (moreMessagesService *moreMessagesService) addMessage(ctx context.Context, accessToken string, unixSeconds int64, msg string) error {
-	return beginTxBlockVoid(moreMessagesService.databaseService, ctx, func(tx *transaction) error {
-		userId, err := tx.findUserIdForAccessToken(accessToken)
+	return beginTxBlockVoid(moreMessagesService.databaseService, ctx, func(tx *transaction.Transaction) error {
+		userId, err := tx.FindUserIdForAccessToken(accessToken)
 		if err != nil {
 			return errors.J(err, "find user for accessToken failed")
 		}
@@ -25,7 +26,7 @@ func (moreMessagesService *moreMessagesService) addMessage(ctx context.Context, 
 			return errors.UserNotFoundForAccessToken
 		}
 
-		err = tx.addMoreMessage(*userId, unixSeconds, msg)
+		err = tx.AddMoreMessage(*userId, unixSeconds, msg)
 		if err != nil {
 			return errors.J(err, "add more message failed")
 		}

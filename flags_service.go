@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"caroline-weisberg.fun/iljournalierserver/errors"
+	"caroline-weisberg.fun/iljournalierserver/transaction"
 )
 
 type flagsService struct {
@@ -16,9 +17,9 @@ func newFlagsService(databaseService *databaseService) flagsService {
 	}
 }
 
-func (flagsService *flagsService) markFlags(ctx context.Context, accessToken string, markFlagRequests []markFlagRequest) error {
-	return beginTxBlockVoid(flagsService.databaseService, ctx, func(tx *transaction) error {
-		userId, err := tx.findUserIdForAccessToken(accessToken)
+func (flagsService *flagsService) markFlags(ctx context.Context, accessToken string, markFlagRequests []transaction.MarkFlagRequest) error {
+	return beginTxBlockVoid(flagsService.databaseService, ctx, func(tx *transaction.Transaction) error {
+		userId, err := tx.FindUserIdForAccessToken(accessToken)
 		if err != nil {
 			return errors.J(err, "findUserIdForAccessToken failed")
 		}
@@ -27,7 +28,7 @@ func (flagsService *flagsService) markFlags(ctx context.Context, accessToken str
 			return errors.UserNotFoundForAccessToken
 		}
 
-		flagIds, err := tx.getKnownFlagIdsForUser(*userId)
+		flagIds, err := tx.GetKnownFlagIdsForUser(*userId)
 		if err != nil {
 			return errors.J(err, "getKnownFlagIdsForUser failed")
 		}
@@ -40,7 +41,7 @@ func (flagsService *flagsService) markFlags(ctx context.Context, accessToken str
 			}
 		}
 
-		err = tx.markFlags(markFlagRequests)
+		err = tx.MarkFlags(markFlagRequests)
 		if err != nil {
 			return errors.J(err, "failed marking flags")
 		}

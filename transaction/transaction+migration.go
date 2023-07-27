@@ -1,4 +1,4 @@
-package main
+package transaction
 
 import (
 	"fmt"
@@ -6,19 +6,19 @@ import (
 	"caroline-weisberg.fun/iljournalierserver/errors"
 )
 
-func (transaction *transaction) createMigrationsTable() error {
+func (transaction *Transaction) CreateMigrationsTable() error {
 	sql := "CREATE TABLE IF NOT EXISTS migrations (version TEXT NOT NULL PRIMARY KEY)"
-	_, err := transaction.exec(sql)
+	_, err := transaction.Exec(sql)
 	if err != nil {
 		return errors.J(err, "create table failed")
 	}
 	return err
 }
 
-func (transaction *transaction) hasVersionBeenMigrated(version string) (bool, error) {
+func (transaction *Transaction) HasVersionBeenMigrated(version string) (bool, error) {
 	sql := "SELECT COUNT() FROM migrations WHERE version == ?"
 
-	row := transaction.queryRow(sql, version)
+	row := transaction.QueryRow(sql, version)
 
 	var count int
 	err := row.Scan(&count)
@@ -30,9 +30,9 @@ func (transaction *transaction) hasVersionBeenMigrated(version string) (bool, er
 	return count == 1, nil
 }
 
-func (transaction *transaction) markVersionAsMigrated(version string) error {
+func (transaction *Transaction) MarkVersionAsMigrated(version string) error {
 	sql := "INSERT INTO migrations VALUES (?)"
-	_, err := transaction.exec(sql, version)
+	_, err := transaction.Exec(sql, version)
 	if err != nil {
 		return errors.J(err, fmt.Sprintf("insert failed %s", version))
 	}

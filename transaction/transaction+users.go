@@ -1,4 +1,4 @@
-package main
+package transaction
 
 import (
 	"database/sql"
@@ -7,10 +7,10 @@ import (
 	"caroline-weisberg.fun/iljournalierserver/errors"
 )
 
-func (transaction *transaction) createUsersTable() error {
+func (transaction *Transaction) CreateUsersTable() error {
 	sql := "CREATE TABLE users (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, magicKey TEXT NOT NULL UNIQUE)"
 
-	_, err := transaction.exec(sql)
+	_, err := transaction.Exec(sql)
 	if err != nil {
 		return errors.J(err, "create table failed")
 	}
@@ -18,10 +18,10 @@ func (transaction *transaction) createUsersTable() error {
 	return nil
 }
 
-func (transaction *transaction) createUser(magicKey string) (*int64, error) {
+func (transaction *Transaction) CreateUser(magicKey string) (*int64, error) {
 	sql := "INSERT INTO users (magicKey) VALUES (?)"
 
-	result, err := transaction.exec(sql, magicKey)
+	result, err := transaction.Exec(sql, magicKey)
 	if err != nil {
 		return nil, errors.J(err, fmt.Sprintf("insert failed %s", magicKey))
 	}
@@ -34,10 +34,10 @@ func (transaction *transaction) createUser(magicKey string) (*int64, error) {
 	return &lastIndertedId, nil
 }
 
-func (transaction *transaction) findUserForMagicKey(magicKey string) (*int64, error) {
+func (transaction *Transaction) FindUserForMagicKey(magicKey string) (*int64, error) {
 	query := "SELECT (id) FROM users WHERE magicKey = ?"
 
-	userIds, err := txQuery[[]int64](transaction, query, []any{magicKey}, func(rows *sql.Rows) (*[]int64, error) {
+	userIds, err := TxQuery[[]int64](transaction, query, []any{magicKey}, func(rows *sql.Rows) (*[]int64, error) {
 		var userIds []int64
 		for rows.Next() {
 			var userId int64

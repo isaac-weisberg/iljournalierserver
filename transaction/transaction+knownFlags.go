@@ -1,4 +1,4 @@
-package main
+package transaction
 
 import (
 	"database/sql"
@@ -6,7 +6,7 @@ import (
 	"caroline-weisberg.fun/iljournalierserver/errors"
 )
 
-func (transaction *transaction) createKnownFlagsTable() error {
+func (transaction *Transaction) CreateKnownFlagsTable() error {
 	query := `CREATE TABLE knownFlags (
 		id INTEGER NOT NULL PRIMARY KEY,
 		userId INTEGER NOT NULL,
@@ -14,7 +14,7 @@ func (transaction *transaction) createKnownFlagsTable() error {
 		FOREIGN KEY (userId) REFERENCES users(id)
 	)`
 
-	_, err := transaction.exec(query)
+	_, err := transaction.Exec(query)
 	if err != nil {
 		return errors.J(err, "create table failed")
 	}
@@ -22,10 +22,10 @@ func (transaction *transaction) createKnownFlagsTable() error {
 	return nil
 }
 
-func (transaction *transaction) addKnownFlag(userId int64, text string) error {
+func (transaction *Transaction) AddKnownFlag(userId int64, text string) error {
 	query := `INSERT INTO knownFlags (userId, flagName) VALUES (?, ?)`
 
-	_, err := transaction.exec(query, userId, text)
+	_, err := transaction.Exec(query, userId, text)
 	if err != nil {
 		return errors.J(err, "insert failed")
 	}
@@ -33,11 +33,11 @@ func (transaction *transaction) addKnownFlag(userId int64, text string) error {
 	return nil
 }
 
-func (transaction *transaction) getKnownFlagIdsForUser(userId int64) ([]int64, error) {
+func (transaction *Transaction) GetKnownFlagIdsForUser(userId int64) ([]int64, error) {
 	query := "SELECT (id) FROM knownFlags WHERE userId = ?"
 	args := []any{userId}
 
-	userIds, err := txQuery[[]int64](transaction, query, args, func(rows *sql.Rows) (*[]int64, error) {
+	userIds, err := TxQuery[[]int64](transaction, query, args, func(rows *sql.Rows) (*[]int64, error) {
 		var flagIds []int64
 
 		for rows.Next() {

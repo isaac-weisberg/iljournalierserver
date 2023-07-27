@@ -1,4 +1,4 @@
-package main
+package transaction
 
 import (
 	"strings"
@@ -6,7 +6,7 @@ import (
 	"caroline-weisberg.fun/iljournalierserver/errors"
 )
 
-func (transaction *transaction) createFlagsTable() error {
+func (transaction *Transaction) CreateFlagsTable() error {
 	query := `CREATE TABLE flags (
 		id INTEGER NOT NULL PRIMARY KEY,
 		unixSeconds INTEGER NOT NULL,
@@ -14,7 +14,7 @@ func (transaction *transaction) createFlagsTable() error {
 		FOREIGN KEY (flagId) REFERENCES knownFlags(id)
 	)`
 
-	_, err := transaction.exec(query)
+	_, err := transaction.Exec(query)
 	if err != nil {
 		return errors.J(err, "create table failed")
 	}
@@ -22,7 +22,12 @@ func (transaction *transaction) createFlagsTable() error {
 	return nil
 }
 
-func (transaction *transaction) markFlags(requests []markFlagRequest) error {
+type MarkFlagRequest struct {
+	UnixSeconds int64
+	FlagId      int64
+}
+
+func (transaction *Transaction) MarkFlags(requests []MarkFlagRequest) error {
 	if len(requests) == 0 {
 		return nil
 	}
@@ -42,7 +47,7 @@ func (transaction *transaction) markFlags(requests []markFlagRequest) error {
 
 	resultingQuery := builder.String()
 
-	_, err := transaction.exec(resultingQuery, args)
+	_, err := transaction.Exec(resultingQuery, args)
 	if err != nil {
 		return errors.J(err, "inserting failed")
 	}
