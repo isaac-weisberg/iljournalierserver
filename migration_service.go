@@ -39,6 +39,16 @@ func migrateDatabase(ctx context.Context, databaseService *databaseService) erro
 				return j(err, "create more msgs table failed")
 			}
 
+			err = tx.createKnownFlagsTable()
+			if err != nil {
+				return j(err, "createKnownFlagsTable failed")
+			}
+
+			err = tx.createFlagsTable()
+			if err != nil {
+				return j(err, "createFlagsTable failed")
+			}
+
 			err = tx.markVersionAsMigrated(migrationVersion1)
 			if err != nil {
 				return j(err, "markVersionAsMigrated error")

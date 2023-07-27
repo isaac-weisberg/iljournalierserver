@@ -12,9 +12,6 @@ func newMoreMessagesService(databaseService *databaseService) moreMessagesServic
 	return moreMessagesService{databaseService: databaseService}
 }
 
-var userNotFoundForAccessToken = e("userNotFoundForAccessToken")
-var userNotFoundForMagicKey = e("userNotFoundForMagicKey")
-
 func (moreMessagesService *moreMessagesService) addMessage(ctx context.Context, accessToken string, unixSeconds int64, msg string) error {
 	return beginTxBlockVoid(moreMessagesService.databaseService, ctx, func(tx *transaction) error {
 		userId, err := tx.findUserIdForAccessToken(accessToken)
