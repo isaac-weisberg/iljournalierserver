@@ -1,6 +1,10 @@
 package main
 
-import "strings"
+import (
+	"strings"
+
+	"caroline-weisberg.fun/iljournalierserver/errors"
+)
 
 func (transaction *transaction) createFlagsTable() error {
 	query := `CREATE TABLE flags (
@@ -12,7 +16,7 @@ func (transaction *transaction) createFlagsTable() error {
 
 	_, err := transaction.exec(query)
 	if err != nil {
-		return j(err, "create table failed")
+		return errors.J(err, "create table failed")
 	}
 
 	return nil
@@ -40,7 +44,7 @@ func (transaction *transaction) markFlags(requests []markFlagRequest) error {
 
 	_, err := transaction.exec(resultingQuery, args)
 	if err != nil {
-		return j(err, "inserting failed")
+		return errors.J(err, "inserting failed")
 	}
 
 	return nil

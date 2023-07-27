@@ -1,6 +1,9 @@
 package main
 
-import "github.com/gofrs/uuid"
+import (
+	"caroline-weisberg.fun/iljournalierserver/errors"
+	"github.com/gofrs/uuid"
+)
 
 type randomIdService struct {
 }
@@ -13,7 +16,7 @@ func (randomIdService *randomIdService) generateRandomId() (*string, error) {
 	uniqueId, err := uuid.NewV4()
 
 	if err != nil {
-		return nil, j(err, "uuid creation error")
+		return nil, errors.J(err, "uuid creation error")
 	}
 
 	str := uniqueId.String()

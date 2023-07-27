@@ -3,6 +3,8 @@ package main
 import (
 	"database/sql"
 	"fmt"
+
+	"caroline-weisberg.fun/iljournalierserver/errors"
 )
 
 func (transaction *transaction) createAccessTokensTable() error {
@@ -16,7 +18,7 @@ func (transaction *transaction) createAccessTokensTable() error {
 
 	_, err := transaction.exec(sql)
 	if err != nil {
-		return j(err, "create table failed")
+		return errors.J(err, "create table failed")
 	}
 
 	return nil
@@ -27,7 +29,7 @@ func (transaction *transaction) createAccessToken(userId int64, accessToken stri
 
 	_, err := transaction.exec(query, userId, accessToken)
 	if err != nil {
-		return j(err, fmt.Sprintf("insert failed userId=%v accessToken=%v", userId, accessToken))
+		return errors.J(err, fmt.Sprintf("insert failed userId=%v accessToken=%v", userId, accessToken))
 	}
 
 	return nil
@@ -42,20 +44,20 @@ func (transaction *transaction) findUserIdForAccessToken(accessToken string) (*i
 			var userId int64
 			err := rows.Scan(&userId)
 			if err != nil {
-				return nil, j(err, "scanning rows failed")
+				return nil, errors.J(err, "scanning rows failed")
 			}
 			userIds = append(userIds, userId)
 		}
 		err := rows.Err()
 		if err != nil {
-			return nil, j(err, "rows returned error")
+			return nil, errors.J(err, "rows returned error")
 		}
 
 		return &userIds, nil
 	})
 
 	if err != nil {
-		return nil, j(err, "txQuery failed")
+		return nil, errors.J(err, "txQuery failed")
 	}
 
 	switch len(*userIds) {
@@ -66,6 +68,6 @@ func (transaction *transaction) findUserIdForAccessToken(accessToken string) (*i
 		return &firstUserId, nil
 	default:
 		firstUserId := (*userIds)[0]
-		return &firstUserId, e("multiple users for this access token - this is bad")
+		return &firstUserId, errors.E("multiple users for this access token - this is bad")
 	}
 }

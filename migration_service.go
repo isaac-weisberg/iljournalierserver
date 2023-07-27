@@ -3,6 +3,8 @@ package main
 import (
 	"context"
 	"fmt"
+
+	"caroline-weisberg.fun/iljournalierserver/errors"
 )
 
 const (
@@ -13,12 +15,12 @@ func migrateDatabase(ctx context.Context, databaseService *databaseService) erro
 	return beginTxBlockVoid(databaseService, ctx, func(tx *transaction) error {
 		err := tx.createMigrationsTable()
 		if err != nil {
-			return j(err, "migrations table creation error")
+			return errors.J(err, "migrations table creation error")
 		}
 
 		v1Migrated, err := tx.hasVersionBeenMigrated(migrationVersion1)
 		if err != nil {
-			return j(err, "get hasVersionBeenMigrated failed")
+			return errors.J(err, "get hasVersionBeenMigrated failed")
 		}
 
 		if !v1Migrated {
@@ -26,32 +28,32 @@ func migrateDatabase(ctx context.Context, databaseService *databaseService) erro
 
 			err = tx.createUsersTable()
 			if err != nil {
-				return j(err, "create users table error")
+				return errors.J(err, "create users table error")
 			}
 
 			err = tx.createAccessTokensTable()
 			if err != nil {
-				return j(err, "create access tokens table failed")
+				return errors.J(err, "create access tokens table failed")
 			}
 
 			err = tx.createMoreMessagesTable()
 			if err != nil {
-				return j(err, "create more msgs table failed")
+				return errors.J(err, "create more msgs table failed")
 			}
 
 			err = tx.createKnownFlagsTable()
 			if err != nil {
-				return j(err, "createKnownFlagsTable failed")
+				return errors.J(err, "createKnownFlagsTable failed")
 			}
 
 			err = tx.createFlagsTable()
 			if err != nil {
-				return j(err, "createFlagsTable failed")
+				return errors.J(err, "createFlagsTable failed")
 			}
 
 			err = tx.markVersionAsMigrated(migrationVersion1)
 			if err != nil {
-				return j(err, "markVersionAsMigrated error")
+				return errors.J(err, "markVersionAsMigrated error")
 			}
 		} else {
 			fmt.Println("IlJournalierServer: Migration", migrationVersion1, "already applied")

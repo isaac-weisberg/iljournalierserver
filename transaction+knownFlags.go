@@ -1,6 +1,10 @@
 package main
 
-import "database/sql"
+import (
+	"database/sql"
+
+	"caroline-weisberg.fun/iljournalierserver/errors"
+)
 
 func (transaction *transaction) createKnownFlagsTable() error {
 	query := `CREATE TABLE knownFlags (
@@ -12,7 +16,7 @@ func (transaction *transaction) createKnownFlagsTable() error {
 
 	_, err := transaction.exec(query)
 	if err != nil {
-		return j(err, "create table failed")
+		return errors.J(err, "create table failed")
 	}
 
 	return nil
@@ -23,7 +27,7 @@ func (transaction *transaction) addKnownFlag(userId int64, text string) error {
 
 	_, err := transaction.exec(query, userId, text)
 	if err != nil {
-		return j(err, "insert failed")
+		return errors.J(err, "insert failed")
 	}
 
 	return nil
@@ -40,20 +44,20 @@ func (transaction *transaction) getKnownFlagIdsForUser(userId int64) ([]int64, e
 			var flagId int64
 			err := rows.Scan(&flagId)
 			if err != nil {
-				return nil, j(err, "scan failed")
+				return nil, errors.J(err, "scan failed")
 			}
 			flagIds = append(flagIds, flagId)
 		}
 		err := rows.Err()
 		if err != nil {
-			return nil, j(err, "rows returned error")
+			return nil, errors.J(err, "rows returned error")
 		}
 
 		return &flagIds, nil
 	})
 
 	if err != nil {
-		return nil, j(err, "txQuery failed")
+		return nil, errors.J(err, "txQuery failed")
 	}
 
 	return *userIds, nil

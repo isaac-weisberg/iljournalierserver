@@ -1,6 +1,10 @@
 package main
 
-import "context"
+import (
+	"context"
+
+	"caroline-weisberg.fun/iljournalierserver/errors"
+)
 
 type diContainer struct {
 	databaseService     *databaseService
@@ -13,12 +17,12 @@ func newDIContainer(ctx context.Context) (*diContainer, error) {
 	databaseService, err := newDatabaseService(ctx)
 
 	if err != nil {
-		return nil, j(err, "database creation failed")
+		return nil, errors.J(err, "database creation failed")
 	}
 
 	err = migrateDatabase(ctx, databaseService)
 	if err != nil {
-		return nil, j(err, "database migration failed")
+		return nil, errors.J(err, "database migration failed")
 	}
 
 	randomIdService := newRandomIdService()

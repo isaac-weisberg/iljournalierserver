@@ -1,5 +1,7 @@
 package main
 
+import "caroline-weisberg.fun/iljournalierserver/errors"
+
 func (transaction *transaction) createMoreMessagesTable() error {
 	sql := `
 	CREATE TABLE moreMessages (
@@ -12,7 +14,7 @@ func (transaction *transaction) createMoreMessagesTable() error {
 
 	_, err := transaction.exec(sql)
 	if err != nil {
-		return j(err, "create table failed")
+		return errors.J(err, "create table failed")
 	}
 	return nil
 }
@@ -23,7 +25,7 @@ func (transaction *transaction) addMoreMessage(userId int64, unixSeconds int64, 
 	`
 	_, err := transaction.exec(sql, userId, unixSeconds, msg)
 	if err != nil {
-		return j(err, "insert failed")
+		return errors.J(err, "insert failed")
 	}
 
 	return nil

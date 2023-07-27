@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 
+	"caroline-weisberg.fun/iljournalierserver/errors"
 	_ "github.com/mattn/go-sqlite3"
 )
 
@@ -40,7 +41,7 @@ func beginTxBlock[R interface{}](databaseService *databaseService, ctx context.C
 	tx, err := databaseService.db.BeginTx(ctx, nil)
 
 	if err != nil {
-		return nil, j(err, "begin tx failed")
+		return nil, errors.J(err, "begin tx failed")
 	}
 
 	transaction := newTransaction(ctx, tx)
@@ -48,17 +49,17 @@ func beginTxBlock[R interface{}](databaseService *databaseService, ctx context.C
 	res, err := block(&transaction)
 
 	if err != nil {
-		var blockError = j(err, "transaction block failed")
+		var blockError = errors.J(err, "transaction block failed")
 		rollbackError := transaction.tx.Rollback()
 		if rollbackError != nil {
-			return nil, js(rollbackError, blockError)
+			return nil, errors.Js(rollbackError, blockError)
 		}
 		return nil, blockError
 	}
 
 	err = transaction.tx.Commit()
 	if err != nil {
-		return res, j(err, "commit failed")
+		return res, errors.J(err, "commit failed")
 	}
 
 	return res, nil

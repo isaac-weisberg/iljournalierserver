@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
+
+	"caroline-weisberg.fun/iljournalierserver/errors"
 )
 
 type moreMessagesController struct {
@@ -42,7 +44,7 @@ func (moreMessagesController *moreMessagesController) addMoreMessage(w http.Resp
 	)
 
 	if err != nil {
-		if is(err, userNotFoundForAccessToken) {
+		if errors.Is(err, errors.UserNotFoundForAccessToken) {
 			w.WriteHeader(418)
 			return
 		} else {

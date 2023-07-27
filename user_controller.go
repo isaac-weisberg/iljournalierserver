@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
+
+	"caroline-weisberg.fun/iljournalierserver/errors"
 )
 
 type userController struct {
@@ -69,7 +71,7 @@ func (uc *userController) login(w http.ResponseWriter, r *http.Request) {
 
 	loginSuccess, err := uc.userService.login(loginRequestBody.LoginKey, r.Context())
 	if err != nil {
-		if is(err, userNotFoundForMagicKey) {
+		if errors.Is(err, errors.UserNotFoundForMagicKey) {
 			w.WriteHeader(418)
 			return
 		} else {

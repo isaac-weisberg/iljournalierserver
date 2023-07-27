@@ -3,6 +3,8 @@ package main
 import (
 	"database/sql"
 	"fmt"
+
+	"caroline-weisberg.fun/iljournalierserver/errors"
 )
 
 func (transaction *transaction) createUsersTable() error {
@@ -10,7 +12,7 @@ func (transaction *transaction) createUsersTable() error {
 
 	_, err := transaction.exec(sql)
 	if err != nil {
-		return j(err, "create table failed")
+		return errors.J(err, "create table failed")
 	}
 
 	return nil
@@ -21,12 +23,12 @@ func (transaction *transaction) createUser(magicKey string) (*int64, error) {
 
 	result, err := transaction.exec(sql, magicKey)
 	if err != nil {
-		return nil, j(err, fmt.Sprintf("insert failed %s", magicKey))
+		return nil, errors.J(err, fmt.Sprintf("insert failed %s", magicKey))
 	}
 
 	lastIndertedId, err := result.LastInsertId()
 	if err != nil {
-		return nil, j(err, "last inserted id failed")
+		return nil, errors.J(err, "last inserted id failed")
 	}
 
 	return &lastIndertedId, nil
@@ -41,21 +43,21 @@ func (transaction *transaction) findUserForMagicKey(magicKey string) (*int64, er
 			var userId int64
 			err := rows.Scan(&userId)
 			if err != nil {
-				return nil, j(err, "scanning row failed")
+				return nil, errors.J(err, "scanning row failed")
 			}
 			userIds = append(userIds, userId)
 		}
 
 		err := rows.Err()
 		if err != nil {
-			return nil, j(err, "rows returned error")
+			return nil, errors.J(err, "rows returned error")
 		}
 
 		return &userIds, nil
 	})
 
 	if err != nil {
-		return nil, j(err, "txQuery failed")
+		return nil, errors.J(err, "txQuery failed")
 	}
 
 	switch len(*userIds) {
@@ -66,6 +68,6 @@ func (transaction *transaction) findUserForMagicKey(magicKey string) (*int64, er
 		return &firstUserId, nil
 	default:
 		firstUserId := (*userIds)[0]
-		return &firstUserId, e("multiple users found for magic key, which is unexpected")
+		return &firstUserId, errors.E("multiple users found for magic key, which is unexpected")
 	}
 }

@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
+
+	"caroline-weisberg.fun/iljournalierserver/errors"
 )
 
 type flagsController struct {
@@ -43,10 +45,10 @@ func (flagsController *flagsController) markFlags(w http.ResponseWriter, r *http
 
 	err = flagsController.flagsService.markFlags(r.Context(), markFlagsRequestBody.AccessToken, markFlagsRequestBody.Requests)
 	if err != nil {
-		if is(err, userNotFoundForAccessToken) {
+		if errors.Is(err, errors.UserNotFoundForAccessToken) {
 			w.WriteHeader(418)
 			return
-		} else if is(err, flagDoesntBelongToTheUser) {
+		} else if errors.Is(err, errors.FlagDoesntBelongToTheUser) {
 			w.WriteHeader(418)
 			return
 		} else {

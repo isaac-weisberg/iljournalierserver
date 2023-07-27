@@ -2,6 +2,8 @@ package main
 
 import (
 	"context"
+
+	"caroline-weisberg.fun/iljournalierserver/errors"
 )
 
 type moreMessagesService struct {
@@ -16,16 +18,16 @@ func (moreMessagesService *moreMessagesService) addMessage(ctx context.Context, 
 	return beginTxBlockVoid(moreMessagesService.databaseService, ctx, func(tx *transaction) error {
 		userId, err := tx.findUserIdForAccessToken(accessToken)
 		if err != nil {
-			return j(err, "find user for accessToken failed")
+			return errors.J(err, "find user for accessToken failed")
 		}
 
 		if userId == nil {
-			return userNotFoundForAccessToken
+			return errors.UserNotFoundForAccessToken
 		}
 
 		err = tx.addMoreMessage(*userId, unixSeconds, msg)
 		if err != nil {
-			return j(err, "add more message failed")
+			return errors.J(err, "add more message failed")
 		}
 
 		return nil

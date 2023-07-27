@@ -3,6 +3,8 @@ package main
 import (
 	"context"
 	"database/sql"
+
+	"caroline-weisberg.fun/iljournalierserver/errors"
 )
 
 type transaction struct {
@@ -25,14 +27,14 @@ func (transaction *transaction) queryRow(query string, args ...any) *sql.Row {
 func txQuery[R interface{}](transaction *transaction, query string, args []any, block func(rows *sql.Rows) (*R, error)) (*R, error) {
 	rows, err := transaction.tx.QueryContext(transaction.ctx, query, args...)
 	if err != nil {
-		return nil, j(err, "query context failed")
+		return nil, errors.J(err, "query context failed")
 	}
 	defer rows.Close()
 
 	res, err := block(rows)
 
 	if err != nil {
-		return res, j(err, "query block failed")
+		return res, errors.J(err, "query block failed")
 	}
 
 	return res, nil
