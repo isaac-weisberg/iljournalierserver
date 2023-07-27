@@ -18,11 +18,6 @@ func (transaction *transaction) createFlagsTable() error {
 	return nil
 }
 
-type markFlagRequest struct {
-	unixSeconds int64
-	flagId      int64
-}
-
 func (transaction *transaction) markFlags(requests []markFlagRequest) error {
 	if len(requests) == 0 {
 		return nil
@@ -32,13 +27,13 @@ func (transaction *transaction) markFlags(requests []markFlagRequest) error {
 	remainingRequests := requests[1:]
 
 	builder := strings.Builder{}
-	args := []any{firstRequest.unixSeconds, firstRequest.flagId}
+	args := []any{firstRequest.UnixSeconds, firstRequest.FlagId}
 
 	builder.WriteString("INSERT INTO flags (unixSeconds, flagId) VALUES (?, ?)")
 
 	for _, request := range remainingRequests {
 		builder.WriteString(", (?, ?)")
-		args = append(args, request.unixSeconds, request.flagId)
+		args = append(args, request.UnixSeconds, request.FlagId)
 	}
 
 	resultingQuery := builder.String()

@@ -6,6 +6,7 @@ type diContainer struct {
 	databaseService     *databaseService
 	userService         *userService
 	moreMessagesService *moreMessagesService
+	flagsService        *flagsService
 }
 
 func newDIContainer(ctx context.Context) (*diContainer, error) {
@@ -26,10 +27,13 @@ func newDIContainer(ctx context.Context) (*diContainer, error) {
 
 	moreMessagesService := newMoreMessagesService(databaseService)
 
+	flagsService := newFlagsService(databaseService)
+
 	var di = diContainer{
 		databaseService,
 		&userService,
 		&moreMessagesService,
+		&flagsService,
 	}
 	return &di, nil
 }

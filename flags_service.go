@@ -33,7 +33,7 @@ func (flagsService *flagsService) markFlags(ctx context.Context, accessToken str
 		var flagIdsMap = mapFromSlice[int64](flagIds)
 
 		for _, markedFlag := range markFlagRequests {
-			if !mapContains[int64](flagIdsMap, markedFlag.flagId) {
+			if !mapContains[int64](flagIdsMap, markedFlag.FlagId) {
 				return flagDoesntBelongToTheUser
 			}
 		}

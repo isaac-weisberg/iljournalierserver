@@ -8,15 +8,18 @@ import (
 type mainRouter struct {
 	userController         *userController
 	moreMessagesController *moreMessagesController
+	flagsController        *flagsController
 }
 
 func newMainRouter(di *diContainer) mainRouter {
 	userController := newUserController(di.userService)
 	moreMessagesController := newMoreMessagesController(di.moreMessagesService)
+	flagsController := newFlagsController(di.flagsService)
 
 	mainRouter := mainRouter{
 		userController:         &userController,
 		moreMessagesController: &moreMessagesController,
+		flagsController:        &flagsController,
 	}
 
 	return mainRouter
@@ -38,6 +41,8 @@ func (router *mainRouter) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			router.userController.createUser(w, r)
 		case "/messages/add":
 			router.moreMessagesController.addMoreMessage(w, r)
+		case "/flags/mark":
+			router.flagsController.markFlags(w, r)
 		default:
 			router.respond404(w, r)
 		}
