@@ -6,7 +6,7 @@ import (
 )
 
 func (transaction *transaction) createAccessTokensTable() error {
-	sql := `CREATE TABLE IF NOT EXISTS accessTokens 
+	sql := `CREATE TABLE accessTokens 
 		(
 			id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
 			userId INTEGER NOT NULL, 

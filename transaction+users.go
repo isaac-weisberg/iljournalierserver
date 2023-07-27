@@ -6,7 +6,7 @@ import (
 )
 
 func (transaction *transaction) createUsersTable() error {
-	sql := "CREATE TABLE IF NOT EXISTS users (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, magicKey TEXT NOT NULL UNIQUE)"
+	sql := "CREATE TABLE users (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, magicKey TEXT NOT NULL UNIQUE)"
 
 	_, err := transaction.exec(sql)
 	if err != nil {
