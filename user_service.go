@@ -4,15 +4,16 @@ import (
 	"context"
 
 	"caroline-weisberg.fun/iljournalierserver/errors"
+	"caroline-weisberg.fun/iljournalierserver/services"
 	"caroline-weisberg.fun/iljournalierserver/transaction"
 )
 
 type userService struct {
-	dbService       *databaseService
+	dbService       *services.DatabaseService
 	randomIdService *randomIdService
 }
 
-func newUserService(dbService *databaseService, randomIdService *randomIdService) userService {
+func newUserService(dbService *services.DatabaseService, randomIdService *randomIdService) userService {
 	return userService{dbService: dbService, randomIdService: randomIdService}
 }
 
@@ -32,7 +33,7 @@ func (userService *userService) createUser(ctx context.Context) (*createUserSucc
 		return nil, errors.J(err, "generate accessToken failed")
 	}
 
-	return beginTxBlock[createUserSuccess](userService.dbService, ctx, func(tx *transaction.Transaction) (*createUserSuccess, error) {
+	return services.BeginTxBlock[createUserSuccess](userService.dbService, ctx, func(tx *transaction.Transaction) (*createUserSuccess, error) {
 		if err != nil {
 			return nil, errors.J(err, "start tx failed")
 		}
@@ -59,7 +60,7 @@ type loginSuccess struct {
 }
 
 func (userService *userService) login(magicKey string, ctx context.Context) (*loginSuccess, error) {
-	return beginTxBlock[loginSuccess](userService.dbService, ctx, func(tx *transaction.Transaction) (*loginSuccess, error) {
+	return services.BeginTxBlock[loginSuccess](userService.dbService, ctx, func(tx *transaction.Transaction) (*loginSuccess, error) {
 		userId, err := tx.FindUserForMagicKey(magicKey)
 		if err != nil {
 			return nil, errors.J(err, "find user for magicKey failed")

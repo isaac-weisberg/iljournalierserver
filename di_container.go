@@ -4,17 +4,18 @@ import (
 	"context"
 
 	"caroline-weisberg.fun/iljournalierserver/errors"
+	"caroline-weisberg.fun/iljournalierserver/services"
 )
 
 type diContainer struct {
-	databaseService     *databaseService
+	databaseService     *services.DatabaseService
 	userService         *userService
 	moreMessagesService *moreMessagesService
 	flagsService        *flagsService
 }
 
 func newDIContainer(ctx context.Context) (*diContainer, error) {
-	databaseService, err := newDatabaseService(ctx)
+	databaseService, err := services.NewDatabaseService(ctx)
 
 	if err != nil {
 		return nil, errors.J(err, "database creation failed")

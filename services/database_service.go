@@ -1,4 +1,4 @@
-package main
+package services
 
 import (
 	"context"
@@ -9,11 +9,11 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-type databaseService struct {
+type DatabaseService struct {
 	db *sql.DB
 }
 
-func newDatabaseService(ctx context.Context) (*databaseService, error) {
+func NewDatabaseService(ctx context.Context) (*DatabaseService, error) {
 	db, err := sql.Open("sqlite3", "iljournalierAlpha")
 
 	if err != nil {
@@ -26,19 +26,19 @@ func newDatabaseService(ctx context.Context) (*databaseService, error) {
 		return nil, err
 	}
 
-	databaseService := databaseService{db}
+	databaseService := DatabaseService{db}
 
 	return &databaseService, nil
 }
 
-func beginTxBlockVoid(databaseService *databaseService, ctx context.Context, block func(tx *transaction.Transaction) error) error {
-	_, err := beginTxBlock[interface{}](databaseService, ctx, func(tx *transaction.Transaction) (*interface{}, error) {
+func BeginTxBlockVoid(databaseService *DatabaseService, ctx context.Context, block func(tx *transaction.Transaction) error) error {
+	_, err := BeginTxBlock[interface{}](databaseService, ctx, func(tx *transaction.Transaction) (*interface{}, error) {
 		return nil, block(tx)
 	})
 	return err
 }
 
-func beginTxBlock[R interface{}](databaseService *databaseService, ctx context.Context, block func(tx *transaction.Transaction) (*R, error)) (*R, error) {
+func BeginTxBlock[R interface{}](databaseService *DatabaseService, ctx context.Context, block func(tx *transaction.Transaction) (*R, error)) (*R, error) {
 	tx, err := databaseService.db.BeginTx(ctx, nil)
 
 	if err != nil {

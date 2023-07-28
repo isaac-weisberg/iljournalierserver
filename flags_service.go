@@ -4,21 +4,22 @@ import (
 	"context"
 
 	"caroline-weisberg.fun/iljournalierserver/errors"
+	"caroline-weisberg.fun/iljournalierserver/services"
 	"caroline-weisberg.fun/iljournalierserver/transaction"
 )
 
 type flagsService struct {
-	databaseService *databaseService
+	databaseService *services.DatabaseService
 }
 
-func newFlagsService(databaseService *databaseService) flagsService {
+func newFlagsService(databaseService *services.DatabaseService) flagsService {
 	return flagsService{
 		databaseService: databaseService,
 	}
 }
 
 func (flagsService *flagsService) markFlags(ctx context.Context, accessToken string, markFlagRequests []transaction.MarkFlagRequest) error {
-	return beginTxBlockVoid(flagsService.databaseService, ctx, func(tx *transaction.Transaction) error {
+	return services.BeginTxBlockVoid(flagsService.databaseService, ctx, func(tx *transaction.Transaction) error {
 		userId, err := tx.FindUserIdForAccessToken(accessToken)
 		if err != nil {
 			return errors.J(err, "findUserIdForAccessToken failed")

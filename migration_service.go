@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"caroline-weisberg.fun/iljournalierserver/errors"
+	"caroline-weisberg.fun/iljournalierserver/services"
 	"caroline-weisberg.fun/iljournalierserver/transaction"
 )
 
@@ -12,8 +13,8 @@ const (
 	migrationVersion1 = "1"
 )
 
-func migrateDatabase(ctx context.Context, databaseService *databaseService) error {
-	return beginTxBlockVoid(databaseService, ctx, func(tx *transaction.Transaction) error {
+func migrateDatabase(ctx context.Context, databaseService *services.DatabaseService) error {
+	return services.BeginTxBlockVoid(databaseService, ctx, func(tx *transaction.Transaction) error {
 		err := tx.CreateMigrationsTable()
 		if err != nil {
 			return errors.J(err, "migrations table creation error")
