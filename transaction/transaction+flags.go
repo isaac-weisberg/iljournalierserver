@@ -8,7 +8,7 @@ import (
 
 func (transaction *Transaction) CreateFlagsTable() error {
 	query := `CREATE TABLE flags (
-		id INTEGER NOT NULL PRIMARY KEY,
+		id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
 		unixSeconds INTEGER NOT NULL,
 		flagId INTEGER NOT NULL,
 		FOREIGN KEY (flagId) REFERENCES knownFlags(id)
@@ -47,7 +47,7 @@ func (transaction *Transaction) MarkFlags(requests []MarkFlagRequest) error {
 
 	resultingQuery := builder.String()
 
-	_, err := transaction.Exec(resultingQuery, args)
+	_, err := transaction.Exec(resultingQuery, args...)
 	if err != nil {
 		return errors.J(err, "inserting failed")
 	}

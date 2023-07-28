@@ -2,13 +2,14 @@ package transaction
 
 import (
 	"database/sql"
+	"strings"
 
 	"caroline-weisberg.fun/iljournalierserver/errors"
 )
 
 func (transaction *Transaction) CreateKnownFlagsTable() error {
 	query := `CREATE TABLE knownFlags (
-		id INTEGER NOT NULL PRIMARY KEY,
+		id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
 		userId INTEGER NOT NULL,
 		flagName TEXT NOT NULL,
 		FOREIGN KEY (userId) REFERENCES users(id)
@@ -22,10 +23,27 @@ func (transaction *Transaction) CreateKnownFlagsTable() error {
 	return nil
 }
 
-func (transaction *Transaction) AddKnownFlag(userId int64, text string) error {
-	query := `INSERT INTO knownFlags (userId, flagName) VALUES (?, ?)`
+func (transaction *Transaction) AddKnownFlags(userId int64, flagNames []string) error {
+	if len(flagNames) == 0 {
+		return nil
+	}
+	var firstFlagName = flagNames[0]
 
-	_, err := transaction.Exec(query, userId, text)
+	var args = make([]any, len(flagNames))
+	var builder strings.Builder
+	builder.WriteString("INSERT INTO knownFlags (userId, flagName) VALUES (?, ?)")
+	args = append(args, userId, firstFlagName)
+
+	var remainingFlagNames = flagNames[1:]
+
+	for _, remainingFlagName := range remainingFlagNames {
+		builder.WriteString(", (?, ?)")
+		args = append(args, userId, remainingFlagName)
+	}
+
+	var query = builder.String()
+
+	_, err := transaction.Exec(query, args...)
 	if err != nil {
 		return errors.J(err, "insert failed")
 	}

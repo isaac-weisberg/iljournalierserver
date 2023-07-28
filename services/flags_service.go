@@ -50,3 +50,23 @@ func (flagsService *FlagsService) MarkFlags(ctx context.Context, accessToken str
 		return nil
 	})
 }
+
+func (flagsService *FlagsService) AddKnownFlags(ctx context.Context, accessToken string, newFlags []string) error {
+	return BeginTxBlockVoid(flagsService.databaseService, ctx, func(tx *transaction.Transaction) error {
+		userId, err := tx.FindUserIdForAccessToken(accessToken)
+		if err != nil {
+			return errors.J(err, "find user if for access token failed")
+		}
+
+		if userId == nil {
+			return errors.UserNotFoundForAccessToken
+		}
+
+		err = tx.AddKnownFlags(*userId, newFlags)
+		if err != nil {
+			return errors.J(err, "tx add known flags failed")
+		}
+
+		return nil
+	})
+}

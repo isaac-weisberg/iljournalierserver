@@ -45,6 +45,11 @@ func (flagsController *flagsController) markFlags(w http.ResponseWriter, r *http
 		return
 	}
 
+	if len(markFlagsRequestBody.Requests) == 0 {
+		w.WriteHeader(500)
+		return
+	}
+
 	markFlagsRequests := make([]transaction.MarkFlagRequest, len(markFlagsRequestBody.Requests))
 	for _, request := range markFlagsRequestBody.Requests {
 		markFlagsRequests = append(markFlagsRequests, transaction.MarkFlagRequest{
@@ -65,6 +70,39 @@ func (flagsController *flagsController) markFlags(w http.ResponseWriter, r *http
 			w.WriteHeader(500)
 			return
 		}
+	}
+
+	w.WriteHeader(200)
+}
+
+type addKnownFlagsRequestBody struct {
+	accessTokenHavingObject
+	NewFlags []string `json:"newFlags"`
+}
+
+func (flagsController *flagsController) addKnownFlags(w http.ResponseWriter, r *http.Request) {
+	var body, err = io.ReadAll(r.Body)
+	if err != nil {
+		w.WriteHeader(500)
+		return
+	}
+
+	var addKnownFlagsRequestBody addKnownFlagsRequestBody
+	err = json.Unmarshal(body, &addKnownFlagsRequestBody)
+	if err != nil {
+		w.WriteHeader(500)
+		return
+	}
+
+	if len(addKnownFlagsRequestBody.NewFlags) == 0 {
+		w.WriteHeader(500)
+		return
+	}
+
+	err = flagsController.flagsService.AddKnownFlags(r.Context(), addKnownFlagsRequestBody.AccessToken, addKnownFlagsRequestBody.NewFlags)
+	if err != nil {
+		handleServiceError(err, w, r)
+		return
 	}
 
 	w.WriteHeader(200)

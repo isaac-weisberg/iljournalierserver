@@ -41,6 +41,8 @@ func (router *mainRouter) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			router.userController.createUser(w, r)
 		case "/messages/add":
 			router.moreMessagesController.addMoreMessage(w, r)
+		case "/flags/addflags":
+			router.flagsController.addKnownFlags(w, r)
 		case "/flags/mark":
 			router.flagsController.markFlags(w, r)
 		default:
