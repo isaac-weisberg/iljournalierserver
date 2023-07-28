@@ -4,14 +4,15 @@ import (
 	"context"
 
 	"caroline-weisberg.fun/iljournalierserver/errors"
+	"caroline-weisberg.fun/iljournalierserver/migrations"
 	"caroline-weisberg.fun/iljournalierserver/services"
 )
 
 type diContainer struct {
 	databaseService     *services.DatabaseService
-	userService         *userService
-	moreMessagesService *moreMessagesService
-	flagsService        *flagsService
+	userService         *services.UserService
+	moreMessagesService *services.MoreMessagesService
+	flagsService        *services.FlagsService
 }
 
 func newDIContainer(ctx context.Context) (*diContainer, error) {
@@ -21,18 +22,18 @@ func newDIContainer(ctx context.Context) (*diContainer, error) {
 		return nil, errors.J(err, "database creation failed")
 	}
 
-	err = migrateDatabase(ctx, databaseService)
+	err = migrations.MigrateDatabase(ctx, databaseService)
 	if err != nil {
 		return nil, errors.J(err, "database migration failed")
 	}
 
-	randomIdService := newRandomIdService()
+	randomIdService := services.NewRandomIdService()
 
-	userService := newUserService(databaseService, &randomIdService)
+	userService := services.NewUserService(databaseService, &randomIdService)
 
-	moreMessagesService := newMoreMessagesService(databaseService)
+	moreMessagesService := services.NewMoreMessagesService(databaseService)
 
-	flagsService := newFlagsService(databaseService)
+	flagsService := services.NewFlagsService(databaseService)
 
 	var di = diContainer{
 		databaseService,

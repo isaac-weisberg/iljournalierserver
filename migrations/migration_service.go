@@ -1,4 +1,4 @@
-package main
+package migrations
 
 import (
 	"context"
@@ -13,7 +13,7 @@ const (
 	migrationVersion1 = "1"
 )
 
-func migrateDatabase(ctx context.Context, databaseService *services.DatabaseService) error {
+func MigrateDatabase(ctx context.Context, databaseService *services.DatabaseService) error {
 	return services.BeginTxBlockVoid(databaseService, ctx, func(tx *transaction.Transaction) error {
 		err := tx.CreateMigrationsTable()
 		if err != nil {

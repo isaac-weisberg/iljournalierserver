@@ -6,13 +6,14 @@ import (
 	"net/http"
 
 	"caroline-weisberg.fun/iljournalierserver/errors"
+	"caroline-weisberg.fun/iljournalierserver/services"
 )
 
 type moreMessagesController struct {
-	moreMessagesService *moreMessagesService
+	moreMessagesService *services.MoreMessagesService
 }
 
-func newMoreMessagesController(moreMessagesService *moreMessagesService) moreMessagesController {
+func newMoreMessagesController(moreMessagesService *services.MoreMessagesService) moreMessagesController {
 	return moreMessagesController{moreMessagesService: moreMessagesService}
 }
 
@@ -36,7 +37,7 @@ func (moreMessagesController *moreMessagesController) addMoreMessage(w http.Resp
 		return
 	}
 
-	err = moreMessagesController.moreMessagesService.addMessage(
+	err = moreMessagesController.moreMessagesService.AddMessage(
 		r.Context(),
 		addMoreMsgBody.AccessToken,
 		addMoreMsgBody.UnixSeconds,

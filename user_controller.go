@@ -6,13 +6,14 @@ import (
 	"net/http"
 
 	"caroline-weisberg.fun/iljournalierserver/errors"
+	"caroline-weisberg.fun/iljournalierserver/services"
 )
 
 type userController struct {
-	userService *userService
+	userService *services.UserService
 }
 
-func newUserController(userService *userService) userController {
+func newUserController(userService *services.UserService) userController {
 	return userController{userService: userService}
 }
 
@@ -22,7 +23,7 @@ type createUserResponseBody struct {
 }
 
 func (uc *userController) createUser(w http.ResponseWriter, r *http.Request) {
-	user, err := uc.userService.createUser(r.Context())
+	user, err := uc.userService.CreateUser(r.Context())
 
 	if err != nil {
 		w.WriteHeader(500)
@@ -31,9 +32,9 @@ func (uc *userController) createUser(w http.ResponseWriter, r *http.Request) {
 
 	createUserResBody := createUserResponseBody{
 		accessTokenHavingObject: accessTokenHavingObject{
-			AccessToken: user.accessToken,
+			AccessToken: user.AccessToken,
 		},
-		LoginKey: user.magicKey,
+		LoginKey: user.MagicKey,
 	}
 
 	bytes, err := json.Marshal(createUserResBody)
@@ -69,7 +70,7 @@ func (uc *userController) login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	loginSuccess, err := uc.userService.login(loginRequestBody.LoginKey, r.Context())
+	loginSuccess, err := uc.userService.Login(loginRequestBody.LoginKey, r.Context())
 	if err != nil {
 		if errors.Is(err, errors.UserNotFoundForMagicKey) {
 			w.WriteHeader(418)
@@ -82,7 +83,7 @@ func (uc *userController) login(w http.ResponseWriter, r *http.Request) {
 
 	response := loginResponseBody{
 		accessTokenHavingObject{
-			AccessToken: loginSuccess.accessToken,
+			AccessToken: loginSuccess.AccessToken,
 		},
 	}
 

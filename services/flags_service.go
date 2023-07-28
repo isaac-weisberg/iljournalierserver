@@ -1,25 +1,25 @@
-package main
+package services
 
 import (
 	"context"
 
 	"caroline-weisberg.fun/iljournalierserver/errors"
-	"caroline-weisberg.fun/iljournalierserver/services"
 	"caroline-weisberg.fun/iljournalierserver/transaction"
+	"caroline-weisberg.fun/iljournalierserver/utils"
 )
 
-type flagsService struct {
-	databaseService *services.DatabaseService
+type FlagsService struct {
+	databaseService *DatabaseService
 }
 
-func newFlagsService(databaseService *services.DatabaseService) flagsService {
-	return flagsService{
+func NewFlagsService(databaseService *DatabaseService) FlagsService {
+	return FlagsService{
 		databaseService: databaseService,
 	}
 }
 
-func (flagsService *flagsService) markFlags(ctx context.Context, accessToken string, markFlagRequests []transaction.MarkFlagRequest) error {
-	return services.BeginTxBlockVoid(flagsService.databaseService, ctx, func(tx *transaction.Transaction) error {
+func (flagsService *FlagsService) MarkFlags(ctx context.Context, accessToken string, markFlagRequests []transaction.MarkFlagRequest) error {
+	return BeginTxBlockVoid(flagsService.databaseService, ctx, func(tx *transaction.Transaction) error {
 		userId, err := tx.FindUserIdForAccessToken(accessToken)
 		if err != nil {
 			return errors.J(err, "findUserIdForAccessToken failed")
@@ -34,10 +34,10 @@ func (flagsService *flagsService) markFlags(ctx context.Context, accessToken str
 			return errors.J(err, "getKnownFlagIdsForUser failed")
 		}
 
-		var flagIdsMap = mapFromSlice[int64](flagIds)
+		var flagIdsMap = utils.MapFromSlice[int64](flagIds)
 
 		for _, markedFlag := range markFlagRequests {
-			if !mapContains[int64](flagIdsMap, markedFlag.FlagId) {
+			if !utils.MapContains[int64](flagIdsMap, markedFlag.FlagId) {
 				return errors.FlagDoesntBelongToTheUser
 			}
 		}

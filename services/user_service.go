@@ -1,28 +1,27 @@
-package main
+package services
 
 import (
 	"context"
 
 	"caroline-weisberg.fun/iljournalierserver/errors"
-	"caroline-weisberg.fun/iljournalierserver/services"
 	"caroline-weisberg.fun/iljournalierserver/transaction"
 )
 
-type userService struct {
-	dbService       *services.DatabaseService
-	randomIdService *randomIdService
+type UserService struct {
+	dbService       *DatabaseService
+	randomIdService *RandomIdService
 }
 
-func newUserService(dbService *services.DatabaseService, randomIdService *randomIdService) userService {
-	return userService{dbService: dbService, randomIdService: randomIdService}
+func NewUserService(dbService *DatabaseService, randomIdService *RandomIdService) UserService {
+	return UserService{dbService: dbService, randomIdService: randomIdService}
 }
 
-type createUserSuccess struct {
-	accessToken string
-	magicKey    string
+type CreateUserSuccess struct {
+	AccessToken string
+	MagicKey    string
 }
 
-func (userService *userService) createUser(ctx context.Context) (*createUserSuccess, error) {
+func (userService *UserService) CreateUser(ctx context.Context) (*CreateUserSuccess, error) {
 	magicKey, err := userService.generateMagicKey()
 	if err != nil {
 		return nil, errors.J(err, "generate magicKey failed")
@@ -33,7 +32,7 @@ func (userService *userService) createUser(ctx context.Context) (*createUserSucc
 		return nil, errors.J(err, "generate accessToken failed")
 	}
 
-	return services.BeginTxBlock[createUserSuccess](userService.dbService, ctx, func(tx *transaction.Transaction) (*createUserSuccess, error) {
+	return BeginTxBlock[CreateUserSuccess](userService.dbService, ctx, func(tx *transaction.Transaction) (*CreateUserSuccess, error) {
 		if err != nil {
 			return nil, errors.J(err, "start tx failed")
 		}
@@ -48,19 +47,19 @@ func (userService *userService) createUser(ctx context.Context) (*createUserSucc
 			return nil, errors.J(err, "create accessToken failed")
 		}
 
-		return &createUserSuccess{
-			accessToken: *accessToken,
-			magicKey:    *magicKey,
+		return &CreateUserSuccess{
+			AccessToken: *accessToken,
+			MagicKey:    *magicKey,
 		}, nil
 	})
 }
 
-type loginSuccess struct {
-	accessToken string
+type LoginSuccess struct {
+	AccessToken string
 }
 
-func (userService *userService) login(magicKey string, ctx context.Context) (*loginSuccess, error) {
-	return services.BeginTxBlock[loginSuccess](userService.dbService, ctx, func(tx *transaction.Transaction) (*loginSuccess, error) {
+func (userService *UserService) Login(magicKey string, ctx context.Context) (*LoginSuccess, error) {
+	return BeginTxBlock[LoginSuccess](userService.dbService, ctx, func(tx *transaction.Transaction) (*LoginSuccess, error) {
 		userId, err := tx.FindUserForMagicKey(magicKey)
 		if err != nil {
 			return nil, errors.J(err, "find user for magicKey failed")
@@ -80,12 +79,12 @@ func (userService *userService) login(magicKey string, ctx context.Context) (*lo
 			return nil, errors.J(err, "creating access token entry failed")
 		}
 
-		return &loginSuccess{accessToken: *accessToken}, nil
+		return &LoginSuccess{AccessToken: *accessToken}, nil
 	})
 }
 
-func (userService *userService) generateAccessToken() (*string, error) {
-	accessToken, err := userService.randomIdService.generateRandomId()
+func (userService *UserService) generateAccessToken() (*string, error) {
+	accessToken, err := userService.randomIdService.GenerateRandomId()
 	if err != nil {
 		return nil, errors.J(err, "generateRandomId failed")
 	}
@@ -93,8 +92,8 @@ func (userService *userService) generateAccessToken() (*string, error) {
 	return accessToken, nil
 }
 
-func (userService *userService) generateMagicKey() (*string, error) {
-	magicKey, err := userService.randomIdService.generateRandomId()
+func (userService *UserService) generateMagicKey() (*string, error) {
+	magicKey, err := userService.randomIdService.GenerateRandomId()
 	if err != nil {
 		return nil, errors.J(err, "generateRandomId failed")
 	}

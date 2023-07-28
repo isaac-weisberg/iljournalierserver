@@ -1,18 +1,18 @@
-package main
+package services
 
 import (
 	"caroline-weisberg.fun/iljournalierserver/errors"
 	"github.com/gofrs/uuid"
 )
 
-type randomIdService struct {
+type RandomIdService struct {
 }
 
-func newRandomIdService() randomIdService {
-	return randomIdService{}
+func NewRandomIdService() RandomIdService {
+	return RandomIdService{}
 }
 
-func (randomIdService *randomIdService) generateRandomId() (*string, error) {
+func (randomIdService *RandomIdService) GenerateRandomId() (*string, error) {
 	uniqueId, err := uuid.NewV4()
 
 	if err != nil {

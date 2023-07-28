@@ -6,14 +6,15 @@ import (
 	"net/http"
 
 	"caroline-weisberg.fun/iljournalierserver/errors"
+	"caroline-weisberg.fun/iljournalierserver/services"
 	"caroline-weisberg.fun/iljournalierserver/transaction"
 )
 
 type flagsController struct {
-	flagsService *flagsService
+	flagsService *services.FlagsService
 }
 
-func newFlagsController(flagsService *flagsService) flagsController {
+func newFlagsController(flagsService *services.FlagsService) flagsController {
 	return flagsController{
 		flagsService: flagsService,
 	}
@@ -52,7 +53,7 @@ func (flagsController *flagsController) markFlags(w http.ResponseWriter, r *http
 		})
 	}
 
-	err = flagsController.flagsService.markFlags(r.Context(), markFlagsRequestBody.AccessToken, markFlagsRequests)
+	err = flagsController.flagsService.MarkFlags(r.Context(), markFlagsRequestBody.AccessToken, markFlagsRequests)
 	if err != nil {
 		if errors.Is(err, errors.UserNotFoundForAccessToken) {
 			w.WriteHeader(418)
