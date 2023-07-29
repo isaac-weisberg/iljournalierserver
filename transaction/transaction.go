@@ -35,7 +35,7 @@ func (transaction *Transaction) Rollback() error {
 func TxQuery[R interface{}](transaction *Transaction, query string, args []any, block func(rows *sql.Rows) (*R, error)) (*R, error) {
 	rows, err := transaction.tx.QueryContext(transaction.ctx, query, args...)
 	if err != nil {
-		return nil, errors.J(err, "query context failed")
+		return nil, errors.J(err, "tx query context creation failed")
 	}
 	defer rows.Close()
 

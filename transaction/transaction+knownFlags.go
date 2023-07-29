@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"caroline-weisberg.fun/iljournalierserver/errors"
+	"caroline-weisberg.fun/iljournalierserver/utils"
 )
 
 func (transaction *Transaction) CreateKnownFlagsTable() error {
@@ -23,9 +24,9 @@ func (transaction *Transaction) CreateKnownFlagsTable() error {
 	return nil
 }
 
-func (transaction *Transaction) AddKnownFlags(userId int64, flagNames []string) error {
+func (transaction *Transaction) AddKnownFlags(userId int64, flagNames []string) (*[]int64, error) {
 	if len(flagNames) == 0 {
-		return nil
+		return &[]int64{}, nil
 	}
 	var firstFlagName = flagNames[0]
 
@@ -41,14 +42,36 @@ func (transaction *Transaction) AddKnownFlags(userId int64, flagNames []string) 
 		args = append(args, userId, remainingFlagName)
 	}
 
+	builder.WriteString("RETURNING id")
+
 	var query = builder.String()
 
-	_, err := transaction.Exec(query, args...)
+	utils.Log(query, args)
+
+	flagIds, err := TxQuery[[]int64](transaction, query, args, func(rows *sql.Rows) (*[]int64, error) {
+		var flagIds = make([]int64, 0, len(flagNames))
+		for rows.Next() {
+			var flagId int64
+			err := rows.Scan(&flagId)
+			if err != nil {
+				return nil, errors.J(err, "scaning flagId failed")
+			}
+			flagIds = append(flagIds, flagId)
+		}
+
+		err := rows.Err()
+		if err != nil {
+			return nil, errors.J(err, "rows returned error")
+		}
+
+		return &flagIds, nil
+	})
+
 	if err != nil {
-		return errors.J(err, "insert failed")
+		return nil, errors.J(err, "insert failed")
 	}
 
-	return nil
+	return flagIds, nil
 }
 
 func (transaction *Transaction) GetKnownFlagIdsForUser(userId int64) ([]int64, error) {
