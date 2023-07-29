@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -52,7 +53,7 @@ func (router *mainRouter) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		case "/flags/addflags":
 			statusCode, body = router.addKnownFlags(r)
 		case "/flags/mark":
-			statusCode = router.markFlags(r)
+			statusCode, body = router.markFlags(r)
 		default:
 			statusCode = 404
 		}
@@ -66,46 +67,75 @@ func (router *mainRouter) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (router *mainRouter) markFlags(r *http.Request) int {
-	err := router.flagsController.markFlags(r)
-	if err != nil {
-		return router.handleCommonErrors(err)
-	}
-
-	return 200
-}
-
-func (router *mainRouter) addKnownFlags(r *http.Request) (int, *[]byte) {
+func handleWJsonReq[
+	ReqBody any,
+](
+	router *mainRouter,
+	r *http.Request,
+	handler func(ctx context.Context, body *ReqBody) (int, *[]byte),
+) (int, *[]byte) {
 	var body, err = io.ReadAll(r.Body)
 	if err != nil {
 		return 500, nil
 	}
 
-	var addKnownFlagsRequestBody addKnownFlagsRequestBody
-	err = json.Unmarshal(body, &addKnownFlagsRequestBody)
+	var parsedBody ReqBody
+	err = json.Unmarshal(body, &parsedBody)
 	if err != nil {
 		return 500, nil
 	}
 
-	addKnownFlagsResponseBody, err := router.flagsController.addKnownFlags(r.Context(), addKnownFlagsRequestBody)
-	if err != nil {
-		return router.handleCommonErrors(err), nil
-	}
+	return handler(r.Context(), &parsedBody)
+}
 
-	responseBody, err := json.Marshal(addKnownFlagsResponseBody)
-	if err != nil {
-		return 500, nil
-	}
+func handleWJsonReqJsonRes[
+	ReqBody any,
+	ResBody any,
+](
+	router *mainRouter,
+	r *http.Request,
+	handler func(ctx context.Context, body *ReqBody) (int, *ResBody),
+) (int, *[]byte) {
+	return handleWJsonReq[ReqBody](router, r, func(ctx context.Context, reqBody *ReqBody) (int, *[]byte) {
+		statusCode, resBody := handler(ctx, reqBody)
 
-	return 200, &responseBody
+		if resBody == nil {
+			return statusCode, nil
+		}
+
+		bodyBytes, err := json.Marshal(resBody)
+		if err != nil {
+			return 500, nil
+		}
+
+		return statusCode, &bodyBytes
+	})
+}
+
+func (router *mainRouter) markFlags(r *http.Request) (int, *[]byte) {
+	return handleWJsonReq[markFlagsRequestBody](router, r, func(ctx context.Context, body *markFlagsRequestBody) (int, *[]byte) {
+		err := router.flagsController.markFlags(ctx, body)
+		if err != nil {
+			return router.handleCommonErrors(err), nil
+		}
+
+		return 200, nil
+	})
+}
+
+func (router *mainRouter) addKnownFlags(r *http.Request) (int, *[]byte) {
+	return handleWJsonReqJsonRes[addKnownFlagsRequestBody, addKnownFlagsResponseBody](router, r, func(ctx context.Context, body *addKnownFlagsRequestBody) (int, *addKnownFlagsResponseBody) {
+		addKnownFlagsResponseBody, err := router.flagsController.addKnownFlags(r.Context(), body)
+		if err != nil {
+			return router.handleCommonErrors(err), nil
+		}
+
+		return 200, addKnownFlagsResponseBody
+	})
 }
 
 func (router *mainRouter) respond404(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(404)
-}
-
-func handleRoute(route func(w http.ResponseWriter, r http.Request) (int, *[]byte)) {
-
 }
 
 func (router *mainRouter) handleCommonErrors(err error) int {

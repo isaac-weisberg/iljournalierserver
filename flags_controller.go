@@ -2,9 +2,6 @@ package main
 
 import (
 	"context"
-	"encoding/json"
-	"io"
-	"net/http"
 
 	"caroline-weisberg.fun/iljournalierserver/errors"
 	"caroline-weisberg.fun/iljournalierserver/services"
@@ -31,19 +28,7 @@ type markFlagsRequestBody struct {
 	Requests []MarkFlagRequest `json:"requests"`
 }
 
-func (flagsController *flagsController) markFlags(r *http.Request) error {
-	body, err := io.ReadAll(r.Body)
-
-	if err != nil {
-		return errors.J(err, "read body failed")
-	}
-
-	var markFlagsRequestBody markFlagsRequestBody
-	err = json.Unmarshal(body, &markFlagsRequestBody)
-	if err != nil {
-		return errors.J(err, "parse body failed")
-	}
-
+func (flagsController *flagsController) markFlags(ctx context.Context, markFlagsRequestBody *markFlagsRequestBody) error {
 	if len(markFlagsRequestBody.Requests) == 0 {
 		return errors.E("mark flags request body had no mark requests")
 	}
@@ -56,10 +41,11 @@ func (flagsController *flagsController) markFlags(r *http.Request) error {
 		})
 	}
 
-	err = flagsController.flagsService.MarkFlags(r.Context(), markFlagsRequestBody.AccessToken, markFlagsRequests)
+	err := flagsController.flagsService.MarkFlags(ctx, markFlagsRequestBody.AccessToken, markFlagsRequests)
 	if err != nil {
 		return errors.J(err, "mark flags failed")
 	}
+
 	return nil
 }
 
@@ -72,7 +58,7 @@ type addKnownFlagsResponseBody struct {
 	FlagIds []int64 `json:"flagIds"`
 }
 
-func (flagsController *flagsController) addKnownFlags(ctx context.Context, addKnownFlagsRequestBody addKnownFlagsRequestBody) (*addKnownFlagsResponseBody, error) {
+func (flagsController *flagsController) addKnownFlags(ctx context.Context, addKnownFlagsRequestBody *addKnownFlagsRequestBody) (*addKnownFlagsResponseBody, error) {
 	if len(addKnownFlagsRequestBody.NewFlags) == 0 {
 		return nil, errors.E("no new flags are suggested")
 	}
