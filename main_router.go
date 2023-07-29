@@ -45,6 +45,8 @@ func (router *mainRouter) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodPost:
 		switch inAppRoute {
+		case "/user/login":
+			statusCode, body = router.handleAndConvert(router.login(r))
 		case "/user/create":
 			statusCode, body = router.handleAndConvert(router.createUser(r))
 		case "/messages/add":
@@ -79,6 +81,25 @@ func parseJson[R any](input io.ReadCloser) (*R, error) {
 	}
 
 	return &parsedBody, nil
+}
+
+func (router *mainRouter) login(r *http.Request) (*[]byte, error) {
+	loginRequestBody, err := parseJson[loginRequestBody](r.Body)
+	if err != nil {
+		return nil, errors.J(err, "parse body failed")
+	}
+
+	response, err := router.userController.login(r.Context(), loginRequestBody)
+	if err != nil {
+		return nil, errors.J(err, "login failed")
+	}
+
+	bytes, err := json.Marshal(response)
+	if err != nil {
+		return nil, errors.J(err, "marshal response failed")
+	}
+
+	return &bytes, nil
 }
 
 func (router *mainRouter) createUser(r *http.Request) (*[]byte, error) {

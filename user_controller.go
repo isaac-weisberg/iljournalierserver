@@ -2,9 +2,6 @@ package main
 
 import (
 	"context"
-	"encoding/json"
-	"io"
-	"net/http"
 
 	"caroline-weisberg.fun/iljournalierserver/errors"
 	"caroline-weisberg.fun/iljournalierserver/services"
@@ -48,30 +45,10 @@ type loginResponseBody struct {
 	accessTokenHavingObject
 }
 
-func (uc *userController) login(w http.ResponseWriter, r *http.Request) {
-	body, err := io.ReadAll(r.Body)
-
+func (uc *userController) login(ctx context.Context, loginRequestBody *loginRequestBody) (*loginResponseBody, error) {
+	loginSuccess, err := uc.userService.Login(loginRequestBody.LoginKey, ctx)
 	if err != nil {
-		w.WriteHeader(500)
-		return
-	}
-
-	var loginRequestBody loginRequestBody
-	err = json.Unmarshal(body, &loginRequestBody)
-	if err != nil {
-		w.WriteHeader(500)
-		return
-	}
-
-	loginSuccess, err := uc.userService.Login(loginRequestBody.LoginKey, r.Context())
-	if err != nil {
-		if errors.Is(err, errors.UserNotFoundForMagicKey) {
-			w.WriteHeader(418)
-			return
-		} else {
-			w.WriteHeader(500)
-			return
-		}
+		return nil, errors.J(err, "user service login failed")
 	}
 
 	response := loginResponseBody{
@@ -80,12 +57,5 @@ func (uc *userController) login(w http.ResponseWriter, r *http.Request) {
 		},
 	}
 
-	resData, err := json.Marshal(response)
-	if err != nil {
-		w.WriteHeader(500)
-		return
-	}
-
-	w.WriteHeader(200)
-	w.Write(resData)
+	return &response, nil
 }

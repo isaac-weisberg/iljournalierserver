@@ -12,7 +12,8 @@ func (transaction *Transaction) CreateAccessTokensTable() error {
 		(
 			id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
 			userId INTEGER NOT NULL, 
-			token TEXT NOT NULL UNIQUE, 
+			token TEXT NOT NULL UNIQUE,
+			isActive INTEGER NOT NULL,
 			FOREIGN KEY(userId) REFERENCES users(id)
 		)`
 
@@ -25,9 +26,9 @@ func (transaction *Transaction) CreateAccessTokensTable() error {
 }
 
 func (transaction *Transaction) CreateAccessToken(userId int64, accessToken string) error {
-	query := "INSERT INTO accessTokens (userId, token) VALUES (?, ?)"
+	query := "INSERT INTO accessTokens (userId, token, isActive) VALUES (?, ?, ?)"
 
-	_, err := transaction.Exec(query, userId, accessToken)
+	_, err := transaction.Exec(query, userId, accessToken, 1)
 	if err != nil {
 		return errors.J(err, fmt.Sprintf("insert failed userId=%v accessToken=%v", userId, accessToken))
 	}
@@ -36,7 +37,7 @@ func (transaction *Transaction) CreateAccessToken(userId int64, accessToken stri
 }
 
 func (transaction *Transaction) FindUserIdForAccessToken(accessToken string) (*int64, error) {
-	query := "SELECT userId FROM accessTokens WHERE token = ?"
+	query := "SELECT userId FROM accessTokens WHERE token = ? AND isActive = 1"
 
 	userIds, err := TxQuery[[]int64](transaction, query, []any{accessToken}, func(rows *sql.Rows) (*[]int64, error) {
 		var userIds []int64
