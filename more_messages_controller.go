@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"caroline-weisberg.fun/iljournalierserver/errors"
+	"caroline-weisberg.fun/iljournalierserver/models"
 	"caroline-weisberg.fun/iljournalierserver/services"
 )
 
@@ -17,16 +18,29 @@ func newMoreMessagesController(moreMessagesService *services.MoreMessagesService
 
 type addMoreMessageRequestBody struct {
 	accessTokenHavingObject
-	UnixSeconds int64  `json:"unixSeconds"`
-	Msg         string `json:"msg"`
+	Requests []struct {
+		UnixSeconds int64  `json:"unixSeconds"`
+		Msg         string `json:"msg"`
+	} `json:"requests"`
 }
 
-func (moreMessagesController *moreMessagesController) addMoreMessage(ctx context.Context, addMoreMessageRequestBody *addMoreMessageRequestBody) error {
+func (moreMessagesController *moreMessagesController) addMoreMessages(
+	ctx context.Context,
+	addMoreMessageRequestBody *addMoreMessageRequestBody,
+) error {
+	if len(addMoreMessageRequestBody.Requests) == 0 {
+		return errors.E("can't insert more messages without more message requests")
+	}
+
+	var addMoreMessageRequests = make([]models.AddMessageRequest, 0, len(addMoreMessageRequestBody.Requests))
+	for _, request := range addMoreMessageRequestBody.Requests {
+		addMoreMessageRequests = append(addMoreMessageRequests, models.NewAddMessageRequest(request.UnixSeconds, request.Msg))
+	}
+
 	var err = moreMessagesController.moreMessagesService.AddMessage(
 		ctx,
 		addMoreMessageRequestBody.AccessToken,
-		addMoreMessageRequestBody.UnixSeconds,
-		addMoreMessageRequestBody.Msg,
+		addMoreMessageRequests,
 	)
 
 	if err != nil {

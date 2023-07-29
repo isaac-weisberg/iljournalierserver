@@ -122,7 +122,7 @@ func (router *mainRouter) addMoreMessage(r *http.Request) (*[]byte, error) {
 		return nil, errors.J(err, "parse json failed")
 	}
 
-	err = router.moreMessagesController.addMoreMessage(r.Context(), addMoreMessageRequestBody)
+	err = router.moreMessagesController.addMoreMessages(r.Context(), addMoreMessageRequestBody)
 	if err != nil {
 		return nil, errors.J(err, "add more message failed")
 	}

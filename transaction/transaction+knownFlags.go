@@ -29,7 +29,7 @@ func (transaction *Transaction) AddKnownFlags(userId int64, flagNames []string) 
 	}
 	var firstFlagName = flagNames[0]
 
-	var args = make([]any, 0, len(flagNames))
+	var args = make([]any, 0, len(flagNames)*2)
 	var builder strings.Builder
 	builder.WriteString("INSERT INTO knownFlags (userId, flagName) VALUES (?, ?)")
 	args = append(args, userId, firstFlagName)

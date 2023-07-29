@@ -1,6 +1,11 @@
 package transaction
 
-import "caroline-weisberg.fun/iljournalierserver/errors"
+import (
+	"strings"
+
+	"caroline-weisberg.fun/iljournalierserver/errors"
+	"caroline-weisberg.fun/iljournalierserver/models"
+)
 
 func (transaction *Transaction) CreateMoreMessagesTable() error {
 	sql := `
@@ -19,11 +24,27 @@ func (transaction *Transaction) CreateMoreMessagesTable() error {
 	return nil
 }
 
-func (transaction *Transaction) AddMoreMessage(userId int64, unixSeconds int64, msg string) error {
-	sql := `
-	INSERT INTO moreMessages (userId, unixTime, message) VALUES (?, ?, ?)
-	`
-	_, err := transaction.Exec(sql, userId, unixSeconds, msg)
+func (transaction *Transaction) AddMoreMessages(userId int64, addMessageRequests []models.AddMessageRequest) error {
+	if len(addMessageRequests) == 0 {
+		return errors.E("no messages to add")
+	}
+
+	var queryBuilder strings.Builder
+	var args = make([]any, 0, len(addMessageRequests)*3)
+
+	var firstAddMessageRequest = addMessageRequests[0]
+	queryBuilder.WriteString("INSERT INTO moreMessages (userId, unixSeconds, message) VALUES (?, ?, ?)")
+	args = append(args, userId, firstAddMessageRequest.UnixSeconds, firstAddMessageRequest.Message)
+
+	var remainingMessageRequests = addMessageRequests[1:]
+	for _, messageRequest := range remainingMessageRequests {
+		queryBuilder.WriteString(", (?, ?, ?)")
+		args = append(args, userId, messageRequest.UnixSeconds, messageRequest.Message)
+	}
+
+	var sql = queryBuilder.String()
+
+	_, err := transaction.Exec(sql, args...)
 	if err != nil {
 		return errors.J(err, "insert failed")
 	}

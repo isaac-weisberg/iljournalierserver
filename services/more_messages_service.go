@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"caroline-weisberg.fun/iljournalierserver/errors"
+	"caroline-weisberg.fun/iljournalierserver/models"
 	"caroline-weisberg.fun/iljournalierserver/transaction"
 )
 
@@ -15,7 +16,11 @@ func NewMoreMessagesService(databaseService *DatabaseService) MoreMessagesServic
 	return MoreMessagesService{databaseService: databaseService}
 }
 
-func (moreMessagesService *MoreMessagesService) AddMessage(ctx context.Context, accessToken string, unixSeconds int64, msg string) error {
+func (moreMessagesService *MoreMessagesService) AddMessage(
+	ctx context.Context,
+	accessToken string,
+	addMessageRequests []models.AddMessageRequest,
+) error {
 	return BeginTxBlockVoid(moreMessagesService.databaseService, ctx, func(tx *transaction.Transaction) error {
 		userId, err := tx.FindUserIdForAccessToken(accessToken)
 		if err != nil {
@@ -26,7 +31,7 @@ func (moreMessagesService *MoreMessagesService) AddMessage(ctx context.Context, 
 			return errors.UserNotFoundForAccessToken
 		}
 
-		err = tx.AddMoreMessage(*userId, unixSeconds, msg)
+		err = tx.AddMoreMessages(*userId, addMessageRequests)
 		if err != nil {
 			return errors.J(err, "add more message failed")
 		}

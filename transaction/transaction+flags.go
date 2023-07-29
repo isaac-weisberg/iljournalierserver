@@ -36,7 +36,9 @@ func (transaction *Transaction) MarkFlags(requests []MarkFlagRequest) error {
 	remainingRequests := requests[1:]
 
 	builder := strings.Builder{}
-	args := []any{firstRequest.UnixSeconds, firstRequest.FlagId}
+
+	var args = make([]any, 0, len(requests))
+	args = append(args, firstRequest.UnixSeconds, firstRequest.FlagId)
 
 	builder.WriteString("INSERT INTO flags (unixSeconds, flagId) VALUES (?, ?)")
 
