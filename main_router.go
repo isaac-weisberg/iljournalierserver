@@ -3,6 +3,8 @@ package main
 import (
 	"net/http"
 	"strings"
+
+	"caroline-weisberg.fun/iljournalierserver/utils"
 )
 
 type mainRouter struct {
@@ -26,7 +28,7 @@ func newMainRouter(di *diContainer) mainRouter {
 }
 
 func (router *mainRouter) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	log("IlJournalierServer: Got connection!", r.URL)
+	utils.Log("IlJournalierServer: Got connection!", r.URL)
 	inAppRoute, found := strings.CutPrefix(r.URL.Path, "/iljournalierserver")
 
 	if !found {

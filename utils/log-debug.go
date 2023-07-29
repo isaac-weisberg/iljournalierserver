@@ -1,9 +1,9 @@
 //go:build !prod
 
-package main
+package utils
 
 import "fmt"
 
-func log(items ...any) {
+func Log(items ...any) {
 	fmt.Println(items...)
 }

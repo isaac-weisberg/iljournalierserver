@@ -8,6 +8,7 @@ import (
 	"caroline-weisberg.fun/iljournalierserver/errors"
 	"caroline-weisberg.fun/iljournalierserver/services"
 	"caroline-weisberg.fun/iljournalierserver/transaction"
+	"caroline-weisberg.fun/iljournalierserver/utils"
 )
 
 type flagsController struct {
@@ -83,6 +84,7 @@ type addKnownFlagsRequestBody struct {
 func (flagsController *flagsController) addKnownFlags(w http.ResponseWriter, r *http.Request) {
 	var body, err = io.ReadAll(r.Body)
 	if err != nil {
+		utils.Log(err)
 		w.WriteHeader(500)
 		return
 	}
@@ -90,6 +92,7 @@ func (flagsController *flagsController) addKnownFlags(w http.ResponseWriter, r *
 	var addKnownFlagsRequestBody addKnownFlagsRequestBody
 	err = json.Unmarshal(body, &addKnownFlagsRequestBody)
 	if err != nil {
+		utils.Log(err)
 		w.WriteHeader(500)
 		return
 	}
@@ -101,6 +104,7 @@ func (flagsController *flagsController) addKnownFlags(w http.ResponseWriter, r *
 
 	err = flagsController.flagsService.AddKnownFlags(r.Context(), addKnownFlagsRequestBody.AccessToken, addKnownFlagsRequestBody.NewFlags)
 	if err != nil {
+		utils.Log(err)
 		handleServiceError(err, w, r)
 		return
 	}
