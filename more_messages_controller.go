@@ -1,9 +1,7 @@
 package main
 
 import (
-	"encoding/json"
-	"io"
-	"net/http"
+	"context"
 
 	"caroline-weisberg.fun/iljournalierserver/errors"
 	"caroline-weisberg.fun/iljournalierserver/services"
@@ -23,37 +21,17 @@ type addMoreMessageRequestBody struct {
 	Msg         string `json:"msg"`
 }
 
-func (moreMessagesController *moreMessagesController) addMoreMessage(w http.ResponseWriter, r *http.Request) {
-	body, err := io.ReadAll(r.Body)
-	if err != nil {
-		w.WriteHeader(500)
-		return
-	}
-
-	var addMoreMsgBody addMoreMessageRequestBody
-	err = json.Unmarshal(body, &addMoreMsgBody)
-	if err != nil {
-		w.WriteHeader(500)
-		return
-	}
-
-	err = moreMessagesController.moreMessagesService.AddMessage(
-		r.Context(),
-		addMoreMsgBody.AccessToken,
-		addMoreMsgBody.UnixSeconds,
-		addMoreMsgBody.Msg,
+func (moreMessagesController *moreMessagesController) addMoreMessage(ctx context.Context, addMoreMessageRequestBody *addMoreMessageRequestBody) error {
+	var err = moreMessagesController.moreMessagesService.AddMessage(
+		ctx,
+		addMoreMessageRequestBody.AccessToken,
+		addMoreMessageRequestBody.UnixSeconds,
+		addMoreMessageRequestBody.Msg,
 	)
 
 	if err != nil {
-		if errors.Is(err, errors.UserNotFoundForAccessToken) {
-			w.WriteHeader(418)
-			return
-		} else {
-			w.WriteHeader(500)
-			return
-		}
+		return errors.J(err, "add message failed")
 	}
 
-	w.WriteHeader(200)
-	return
+	return nil
 }

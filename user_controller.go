@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -22,12 +23,11 @@ type createUserResponseBody struct {
 	LoginKey string `json:"loginKey"`
 }
 
-func (uc *userController) createUser(w http.ResponseWriter, r *http.Request) {
-	user, err := uc.userService.CreateUser(r.Context())
+func (uc *userController) createUser(ctx context.Context) (*createUserResponseBody, error) {
+	user, err := uc.userService.CreateUser(ctx)
 
 	if err != nil {
-		w.WriteHeader(500)
-		return
+		return nil, errors.J(err, "create user service failed")
 	}
 
 	createUserResBody := createUserResponseBody{
@@ -37,14 +37,7 @@ func (uc *userController) createUser(w http.ResponseWriter, r *http.Request) {
 		LoginKey: user.MagicKey,
 	}
 
-	bytes, err := json.Marshal(createUserResBody)
-	if err != nil {
-		w.WriteHeader(500)
-		return
-	}
-
-	w.WriteHeader(200)
-	w.Write(bytes)
+	return &createUserResBody, nil
 }
 
 type loginRequestBody struct {

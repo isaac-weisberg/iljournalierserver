@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -47,13 +46,13 @@ func (router *mainRouter) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	case http.MethodPost:
 		switch inAppRoute {
 		case "/user/create":
-			router.userController.createUser(w, r)
+			statusCode, body = router.handleAndConvert(router.createUser(r))
 		case "/messages/add":
-			router.moreMessagesController.addMoreMessage(w, r)
+			statusCode, body = router.handleAndConvert(router.addMoreMessage(r))
 		case "/flags/addflags":
-			statusCode, body = router.addKnownFlags(r)
+			statusCode, body = router.handleAndConvert(router.addKnownFlags(r))
 		case "/flags/mark":
-			statusCode, body = router.markFlags(r)
+			statusCode, body = router.handleAndConvert(router.markFlags(r))
 		default:
 			statusCode = 404
 		}
@@ -67,71 +66,87 @@ func (router *mainRouter) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func handleWJsonReq[
-	ReqBody any,
-](
-	router *mainRouter,
-	r *http.Request,
-	handler func(ctx context.Context, body *ReqBody) (int, *[]byte),
-) (int, *[]byte) {
-	var body, err = io.ReadAll(r.Body)
+func parseJson[R any](input io.ReadCloser) (*R, error) {
+	var body, err = io.ReadAll(input)
 	if err != nil {
-		return 500, nil
+		return nil, errors.J(err, "failed parsing")
 	}
 
-	var parsedBody ReqBody
+	var parsedBody R
 	err = json.Unmarshal(body, &parsedBody)
 	if err != nil {
-		return 500, nil
+		return nil, errors.J(err, "parsing json failed")
 	}
 
-	return handler(r.Context(), &parsedBody)
+	return &parsedBody, nil
 }
 
-func handleWJsonReqJsonRes[
-	ReqBody any,
-	ResBody any,
-](
-	router *mainRouter,
-	r *http.Request,
-	handler func(ctx context.Context, body *ReqBody) (int, *ResBody),
-) (int, *[]byte) {
-	return handleWJsonReq[ReqBody](router, r, func(ctx context.Context, reqBody *ReqBody) (int, *[]byte) {
-		statusCode, resBody := handler(ctx, reqBody)
+func (router *mainRouter) createUser(r *http.Request) (*[]byte, error) {
+	response, err := router.userController.createUser(r.Context())
+	if err != nil {
+		return nil, errors.J(err, "create user controller failed")
+	}
 
-		if resBody == nil {
-			return statusCode, nil
-		}
+	body, err := json.Marshal(response)
+	if err != nil {
+		return nil, errors.J(err, "body serialization failed")
+	}
 
-		bodyBytes, err := json.Marshal(resBody)
-		if err != nil {
-			return 500, nil
-		}
-
-		return statusCode, &bodyBytes
-	})
+	return &body, nil
 }
 
-func (router *mainRouter) markFlags(r *http.Request) (int, *[]byte) {
-	return handleWJsonReq[markFlagsRequestBody](router, r, func(ctx context.Context, body *markFlagsRequestBody) (int, *[]byte) {
-		err := router.flagsController.markFlags(ctx, body)
-		if err != nil {
-			return router.handleCommonErrors(err), nil
-		}
+func (router *mainRouter) addMoreMessage(r *http.Request) (*[]byte, error) {
+	addMoreMessageRequestBody, err := parseJson[addMoreMessageRequestBody](r.Body)
+	if err != nil {
+		return nil, errors.J(err, "parse json failed")
+	}
 
-		return 200, nil
-	})
+	err = router.moreMessagesController.addMoreMessage(r.Context(), addMoreMessageRequestBody)
+	if err != nil {
+		return nil, errors.J(err, "add more message failed")
+	}
+
+	return nil, nil
 }
 
-func (router *mainRouter) addKnownFlags(r *http.Request) (int, *[]byte) {
-	return handleWJsonReqJsonRes[addKnownFlagsRequestBody, addKnownFlagsResponseBody](router, r, func(ctx context.Context, body *addKnownFlagsRequestBody) (int, *addKnownFlagsResponseBody) {
-		addKnownFlagsResponseBody, err := router.flagsController.addKnownFlags(r.Context(), body)
-		if err != nil {
-			return router.handleCommonErrors(err), nil
-		}
+func (router *mainRouter) markFlags(r *http.Request) (*[]byte, error) {
+	markFlagsRequestBody, err := parseJson[markFlagsRequestBody](r.Body)
+	if err != nil {
+		return nil, errors.J(err, "parsing body failed")
+	}
 
-		return 200, addKnownFlagsResponseBody
-	})
+	err = router.flagsController.markFlags(r.Context(), markFlagsRequestBody)
+	if err != nil {
+		return nil, errors.J(err, "mark flags failed")
+	}
+
+	return nil, nil
+}
+
+func (router *mainRouter) addKnownFlags(r *http.Request) (*[]byte, error) {
+	addKnownFlagsRequestBody, err := parseJson[addKnownFlagsRequestBody](r.Body)
+	if err != nil {
+		return nil, errors.J(err, "parsing body failed")
+	}
+
+	addKnownFlagsResponseBody, err := router.flagsController.addKnownFlags(r.Context(), addKnownFlagsRequestBody)
+	if err != nil {
+		return nil, errors.J(err, "add known flags failed")
+	}
+
+	responseBytes, err := json.Marshal(addKnownFlagsResponseBody)
+	if err != nil {
+		return nil, errors.J(err, "serializing body failed")
+	}
+
+	return &responseBytes, nil
+}
+
+func (router *mainRouter) handleAndConvert(responseBody *[]byte, err error) (int, *[]byte) {
+	if err != nil {
+		return router.handleCommonErrors(err), nil
+	}
+	return 200, responseBody
 }
 
 func (router *mainRouter) respond404(w http.ResponseWriter, r *http.Request) {
