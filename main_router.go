@@ -55,6 +55,8 @@ func (router *mainRouter) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			statusCode, body = router.handleAndConvert(router.addKnownFlags(r))
 		case "/flags/mark":
 			statusCode, body = router.handleAndConvert(router.markFlags(r))
+		case "/flags":
+			statusCode, body = router.handleAndConvert(router.getKnownFlags(r))
 		default:
 			statusCode = 404
 		}
@@ -161,6 +163,25 @@ func (router *mainRouter) addKnownFlags(r *http.Request) (*[]byte, error) {
 	}
 
 	return &responseBytes, nil
+}
+
+func (router *mainRouter) getKnownFlags(r *http.Request) (*[]byte, error) {
+	getKnownFlagsRequestBody, err := parseJson[getKnownFlagsRequestBody](r.Body)
+	if err != nil {
+		return nil, errors.J(err, "parsing request body failed")
+	}
+
+	flagModels, err := router.flagsController.getKnownFlags(r.Context(), getKnownFlagsRequestBody)
+	if err != nil {
+		return nil, errors.J(err, "get known flags failed")
+	}
+
+	bytes, err := json.Marshal(flagModels)
+	if err != nil {
+		return nil, errors.J(err, "serializing body failed")
+	}
+
+	return &bytes, nil
 }
 
 func (router *mainRouter) handleAndConvert(responseBody *[]byte, err error) (int, *[]byte) {

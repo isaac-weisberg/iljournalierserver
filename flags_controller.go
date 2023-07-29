@@ -78,3 +78,40 @@ func (flagsController *flagsController) addKnownFlags(ctx context.Context, addKn
 
 	return &addKnownFlagsResponseBody, err
 }
+
+type getKnownFlagsRequestBody struct {
+	accessTokenHavingObject
+}
+
+type getKnownFlagsResponseBodyFlag struct {
+	Id   int64  `json:"id"`
+	Name string `json:"name"`
+}
+
+func newGetKnownFlagsResponseBodyFlag(id int64, name string) getKnownFlagsResponseBodyFlag {
+	return getKnownFlagsResponseBodyFlag{
+		Id:   id,
+		Name: name,
+	}
+}
+
+type getKnownFlagsResponseBody struct {
+	Flags []getKnownFlagsResponseBodyFlag `json:"flags"`
+}
+
+func (flagsController *flagsController) getKnownFlags(ctx context.Context, request *getKnownFlagsRequestBody) (*getKnownFlagsResponseBody, error) {
+	flagModels, err := flagsController.flagsService.GetKnownFlagsForUser(ctx, request.AccessToken)
+	if err != nil {
+		return nil, errors.J(err, "controller getKnownFlags for user failed")
+	}
+
+	var flagResponseModels = make([]getKnownFlagsResponseBodyFlag, 0, len(*flagModels))
+
+	for _, flagModel := range *flagModels {
+		flagResponseModels = append(flagResponseModels, newGetKnownFlagsResponseBodyFlag(flagModel.Id, flagModel.Name))
+	}
+
+	return &getKnownFlagsResponseBody{
+		Flags: flagResponseModels,
+	}, nil
+}

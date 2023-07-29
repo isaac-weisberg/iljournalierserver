@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"caroline-weisberg.fun/iljournalierserver/errors"
+	"caroline-weisberg.fun/iljournalierserver/models"
 )
 
 func (transaction *Transaction) CreateKnownFlagsTable() error {
@@ -69,6 +70,37 @@ func (transaction *Transaction) AddKnownFlags(userId int64, flagNames []string) 
 	}
 
 	return flagIds, nil
+}
+
+func (transaction *Transaction) GetKnownFlagsForUser(userId int64) (*[]models.FlagModel, error) {
+	var query = "SELECT (id, flagName) FROM knownFlags WHERE userId = ?"
+	var args = []any{userId}
+
+	flagModels, err := TxQuery[[]models.FlagModel](transaction, query, args, func(rows *sql.Rows) (*[]models.FlagModel, error) {
+		var flagModels []models.FlagModel
+		for rows.Next() {
+			var flagId int64
+			var flagName string
+
+			var err = rows.Scan(&flagId, &flagName)
+			if err != nil {
+				return nil, errors.J(err, "scan thrown error")
+			}
+			flagModels = append(flagModels, models.NewFlagModel(flagId, flagName))
+		}
+		var err = rows.Err()
+		if err != nil {
+			return nil, errors.J(err, "rows returned error")
+		}
+
+		return &flagModels, nil
+	})
+
+	if err != nil {
+		return nil, errors.J(err, "tx query failed")
+	}
+
+	return flagModels, nil
 }
 
 func (transaction *Transaction) GetKnownFlagIdsForUser(userId int64) ([]int64, error) {

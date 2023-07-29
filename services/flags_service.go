@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"caroline-weisberg.fun/iljournalierserver/errors"
+	"caroline-weisberg.fun/iljournalierserver/models"
 	"caroline-weisberg.fun/iljournalierserver/transaction"
 	"caroline-weisberg.fun/iljournalierserver/utils"
 )
@@ -68,5 +69,25 @@ func (flagsService *FlagsService) AddKnownFlags(ctx context.Context, accessToken
 		}
 
 		return flagIds, nil
+	})
+}
+
+func (flagsService *FlagsService) GetKnownFlagsForUser(ctx context.Context, accessToken string) (*[]models.FlagModel, error) {
+	return BeginTxBlock[[]models.FlagModel](flagsService.databaseService, ctx, func(tx *transaction.Transaction) (*[]models.FlagModel, error) {
+		userId, err := tx.FindUserIdForAccessToken(accessToken)
+		if err != nil {
+			return nil, errors.J(err, "find user for access token failed")
+		}
+
+		if userId == nil {
+			return nil, errors.UserNotFoundForAccessToken
+		}
+
+		flagModels, err := tx.GetKnownFlagsForUser(*userId)
+		if err != nil {
+			return nil, errors.J(err, "tx.GetKnownFlagsForUser failed")
+		}
+
+		return flagModels, nil
 	})
 }
