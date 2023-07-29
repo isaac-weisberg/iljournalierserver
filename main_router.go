@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"strings"
 
+	"caroline-weisberg.fun/iljournalierserver/errors"
 	"caroline-weisberg.fun/iljournalierserver/utils"
 )
 
@@ -46,7 +47,7 @@ func (router *mainRouter) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		case "/flags/addflags":
 			router.flagsController.addKnownFlags(w, r)
 		case "/flags/mark":
-			router.flagsController.markFlags(w, r)
+			router.markFlags(w, r)
 		default:
 			router.respond404(w, r)
 		}
@@ -55,6 +56,32 @@ func (router *mainRouter) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func (router *mainRouter) markFlags(w http.ResponseWriter, r *http.Request) {
+	err := router.flagsController.markFlags(r)
+	if err != nil {
+		router.handleCommonErrors(err, w)
+		return
+	}
+
+	w.WriteHeader(200)
+}
+
 func (router *mainRouter) respond404(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(404)
+}
+
+func (router *mainRouter) handleCommonErrors(err error, w http.ResponseWriter) {
+	if errors.Is(err, errors.UserNotFoundForAccessToken) {
+		w.WriteHeader(418)
+		return
+	} else if errors.Is(err, errors.UserNotFoundForMagicKey) {
+		w.WriteHeader(418)
+		return
+	} else if errors.Is(err, errors.FlagDoesntBelongToTheUser) {
+		w.WriteHeader(418)
+		return
+	} else {
+		w.WriteHeader(500)
+		return
+	}
 }

@@ -31,24 +31,21 @@ type markFlagsRequestBody struct {
 	Requests []MarkFlagRequest `json:"requests"`
 }
 
-func (flagsController *flagsController) markFlags(w http.ResponseWriter, r *http.Request) {
+func (flagsController *flagsController) markFlags(r *http.Request) error {
 	body, err := io.ReadAll(r.Body)
 
 	if err != nil {
-		w.WriteHeader(500)
-		return
+		return errors.J(err, "read body failed")
 	}
 
 	var markFlagsRequestBody markFlagsRequestBody
 	err = json.Unmarshal(body, &markFlagsRequestBody)
 	if err != nil {
-		w.WriteHeader(500)
-		return
+		return errors.J(err, "parse body failed")
 	}
 
 	if len(markFlagsRequestBody.Requests) == 0 {
-		w.WriteHeader(500)
-		return
+		return errors.E("mark flags request body had no mark requests")
 	}
 
 	markFlagsRequests := make([]transaction.MarkFlagRequest, 0, len(markFlagsRequestBody.Requests))
@@ -61,19 +58,9 @@ func (flagsController *flagsController) markFlags(w http.ResponseWriter, r *http
 
 	err = flagsController.flagsService.MarkFlags(r.Context(), markFlagsRequestBody.AccessToken, markFlagsRequests)
 	if err != nil {
-		if errors.Is(err, errors.UserNotFoundForAccessToken) {
-			w.WriteHeader(418)
-			return
-		} else if errors.Is(err, errors.FlagDoesntBelongToTheUser) {
-			w.WriteHeader(418)
-			return
-		} else {
-			w.WriteHeader(500)
-			return
-		}
+		return errors.J(err, "mark flags failed")
 	}
-
-	w.WriteHeader(200)
+	return nil
 }
 
 type addKnownFlagsRequestBody struct {
@@ -113,7 +100,6 @@ func (flagsController *flagsController) addKnownFlags(w http.ResponseWriter, r *
 	)
 	if err != nil {
 		utils.Log(err)
-		handleServiceError(err, w, r)
 		return
 	}
 
