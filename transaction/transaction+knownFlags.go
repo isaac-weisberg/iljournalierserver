@@ -73,7 +73,7 @@ func (transaction *Transaction) AddKnownFlags(userId int64, flagNames []string) 
 }
 
 func (transaction *Transaction) GetKnownFlagsForUser(userId int64) (*[]models.FlagModel, error) {
-	var query = "SELECT (id, flagName) FROM knownFlags WHERE userId = ?"
+	var query = "SELECT id, flagName FROM knownFlags WHERE userId = ?"
 	var args = []any{userId}
 
 	flagModels, err := TxQuery[[]models.FlagModel](transaction, query, args, func(rows *sql.Rows) (*[]models.FlagModel, error) {
@@ -104,7 +104,7 @@ func (transaction *Transaction) GetKnownFlagsForUser(userId int64) (*[]models.Fl
 }
 
 func (transaction *Transaction) GetKnownFlagIdsForUser(userId int64) ([]int64, error) {
-	query := "SELECT (id) FROM knownFlags WHERE userId = ?"
+	query := "SELECT id FROM knownFlags WHERE userId = ?"
 	args := []any{userId}
 
 	userIds, err := TxQuery[[]int64](transaction, query, args, func(rows *sql.Rows) (*[]int64, error) {

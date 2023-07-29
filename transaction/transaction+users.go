@@ -35,7 +35,7 @@ func (transaction *Transaction) CreateUser(magicKey string) (*int64, error) {
 }
 
 func (transaction *Transaction) FindUserForMagicKey(magicKey string) (*int64, error) {
-	query := "SELECT (id) FROM users WHERE magicKey = ?"
+	query := "SELECT id FROM users WHERE magicKey = ?"
 
 	userIds, err := TxQuery[[]int64](transaction, query, []any{magicKey}, func(rows *sql.Rows) (*[]int64, error) {
 		var userIds []int64
