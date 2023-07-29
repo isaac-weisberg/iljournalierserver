@@ -42,7 +42,7 @@ func (transaction *Transaction) AddKnownFlags(userId int64, flagNames []string) 
 		args = append(args, userId, remainingFlagName)
 	}
 
-	builder.WriteString("RETURNING id")
+	builder.WriteString(" RETURNING id")
 
 	var query = builder.String()
 
