@@ -2,6 +2,6 @@
 
 package utils
 
-func Log(items ...any) {
+func DebugLog(items ...any) {
 
 }

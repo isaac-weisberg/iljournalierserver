@@ -31,7 +31,7 @@ func newMainRouter(di *diContainer) mainRouter {
 }
 
 func (router *mainRouter) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	utils.Log("IlJournalierServer: Got connection!", r.URL)
+	utils.DebugLog("IlJournalierServer: Got connection!", r.URL)
 	inAppRoute, found := strings.CutPrefix(r.URL.Path, "/iljournalierserver")
 
 	if !found {
@@ -144,6 +144,7 @@ func (router *mainRouter) addKnownFlags(r *http.Request) (*[]byte, error) {
 
 func (router *mainRouter) handleAndConvert(responseBody *[]byte, err error) (int, *[]byte) {
 	if err != nil {
+		utils.DebugLog(err)
 		return router.handleCommonErrors(err), nil
 	}
 	return 200, responseBody
