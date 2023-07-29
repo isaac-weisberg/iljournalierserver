@@ -1,6 +1,8 @@
 package main
 
 import (
+	"encoding/json"
+	"io"
 	"net/http"
 	"strings"
 
@@ -37,6 +39,9 @@ func (router *mainRouter) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	var statusCode int
+	var body *[]byte
+
 	switch r.Method {
 	case http.MethodPost:
 		switch inAppRoute {
@@ -45,43 +50,72 @@ func (router *mainRouter) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		case "/messages/add":
 			router.moreMessagesController.addMoreMessage(w, r)
 		case "/flags/addflags":
-			router.flagsController.addKnownFlags(w, r)
+			statusCode, body = router.addKnownFlags(r)
 		case "/flags/mark":
-			router.markFlags(w, r)
+			statusCode = router.markFlags(r)
 		default:
-			router.respond404(w, r)
+			statusCode = 404
 		}
 	default:
-		router.respond404(w, r)
+		statusCode = 404
+	}
+
+	w.WriteHeader(statusCode)
+	if body != nil {
+		w.Write(*body)
 	}
 }
 
-func (router *mainRouter) markFlags(w http.ResponseWriter, r *http.Request) {
+func (router *mainRouter) markFlags(r *http.Request) int {
 	err := router.flagsController.markFlags(r)
 	if err != nil {
-		router.handleCommonErrors(err, w)
-		return
+		return router.handleCommonErrors(err)
 	}
 
-	w.WriteHeader(200)
+	return 200
+}
+
+func (router *mainRouter) addKnownFlags(r *http.Request) (int, *[]byte) {
+	var body, err = io.ReadAll(r.Body)
+	if err != nil {
+		return 500, nil
+	}
+
+	var addKnownFlagsRequestBody addKnownFlagsRequestBody
+	err = json.Unmarshal(body, &addKnownFlagsRequestBody)
+	if err != nil {
+		return 500, nil
+	}
+
+	addKnownFlagsResponseBody, err := router.flagsController.addKnownFlags(r.Context(), addKnownFlagsRequestBody)
+	if err != nil {
+		return router.handleCommonErrors(err), nil
+	}
+
+	responseBody, err := json.Marshal(addKnownFlagsResponseBody)
+	if err != nil {
+		return 500, nil
+	}
+
+	return 200, &responseBody
 }
 
 func (router *mainRouter) respond404(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(404)
 }
 
-func (router *mainRouter) handleCommonErrors(err error, w http.ResponseWriter) {
+func handleRoute(route func(w http.ResponseWriter, r http.Request) (int, *[]byte)) {
+
+}
+
+func (router *mainRouter) handleCommonErrors(err error) int {
 	if errors.Is(err, errors.UserNotFoundForAccessToken) {
-		w.WriteHeader(418)
-		return
+		return 418
 	} else if errors.Is(err, errors.UserNotFoundForMagicKey) {
-		w.WriteHeader(418)
-		return
+		return 418
 	} else if errors.Is(err, errors.FlagDoesntBelongToTheUser) {
-		w.WriteHeader(418)
-		return
+		return 418
 	} else {
-		w.WriteHeader(500)
-		return
+		return 500
 	}
 }

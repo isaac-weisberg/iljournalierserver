@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"caroline-weisberg.fun/iljournalierserver/errors"
-	"caroline-weisberg.fun/iljournalierserver/utils"
 )
 
 func (transaction *Transaction) CreateKnownFlagsTable() error {
@@ -45,8 +44,6 @@ func (transaction *Transaction) AddKnownFlags(userId int64, flagNames []string) 
 	builder.WriteString(" RETURNING id")
 
 	var query = builder.String()
-
-	utils.Log(query, args)
 
 	flagIds, err := TxQuery[[]int64](transaction, query, args, func(rows *sql.Rows) (*[]int64, error) {
 		var flagIds = make([]int64, 0, len(flagNames))

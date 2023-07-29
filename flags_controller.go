@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -8,7 +9,6 @@ import (
 	"caroline-weisberg.fun/iljournalierserver/errors"
 	"caroline-weisberg.fun/iljournalierserver/services"
 	"caroline-weisberg.fun/iljournalierserver/transaction"
-	"caroline-weisberg.fun/iljournalierserver/utils"
 )
 
 type flagsController struct {
@@ -72,47 +72,23 @@ type addKnownFlagsResponseBody struct {
 	FlagIds []int64 `json:"flagIds"`
 }
 
-func (flagsController *flagsController) addKnownFlags(w http.ResponseWriter, r *http.Request) {
-	var body, err = io.ReadAll(r.Body)
-	if err != nil {
-		utils.Log(err)
-		w.WriteHeader(500)
-		return
-	}
-
-	var addKnownFlagsRequestBody addKnownFlagsRequestBody
-	err = json.Unmarshal(body, &addKnownFlagsRequestBody)
-	if err != nil {
-		utils.Log(err)
-		w.WriteHeader(500)
-		return
-	}
-
+func (flagsController *flagsController) addKnownFlags(ctx context.Context, addKnownFlagsRequestBody addKnownFlagsRequestBody) (*addKnownFlagsResponseBody, error) {
 	if len(addKnownFlagsRequestBody.NewFlags) == 0 {
-		w.WriteHeader(500)
-		return
+		return nil, errors.E("no new flags are suggested")
 	}
 
 	flagIds, err := flagsController.flagsService.AddKnownFlags(
-		r.Context(),
+		ctx,
 		addKnownFlagsRequestBody.AccessToken,
 		addKnownFlagsRequestBody.NewFlags,
 	)
 	if err != nil {
-		utils.Log(err)
-		return
+		return nil, errors.J(err, "add known flags service failed")
 	}
 
 	var addKnownFlagsResponseBody = addKnownFlagsResponseBody{
 		FlagIds: *flagIds,
 	}
 
-	responseBody, err := json.Marshal(addKnownFlagsResponseBody)
-	if err != nil {
-		w.WriteHeader(500)
-		return
-	}
-
-	w.WriteHeader(200)
-	w.Write(responseBody)
+	return &addKnownFlagsResponseBody, err
 }
