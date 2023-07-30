@@ -19,13 +19,13 @@ func newFlagsController(flagsService *services.FlagsService) flagsController {
 }
 
 type MarkFlagRequest struct {
-	UnixSeconds int64 `json:"unixSeconds"`
-	FlagId      int64 `json:"flagId"`
+	UnixSeconds int64 `json:"unixSeconds" validate:"required"`
+	FlagId      int64 `json:"flagId" validate:"required"`
 }
 
 type markFlagsRequestBody struct {
 	accessTokenHavingObject
-	Requests []MarkFlagRequest `json:"requests"`
+	Requests []MarkFlagRequest `json:"requests" validate:"required"`
 }
 
 func (flagsController *flagsController) markFlags(ctx context.Context, markFlagsRequestBody *markFlagsRequestBody) error {
@@ -51,11 +51,11 @@ func (flagsController *flagsController) markFlags(ctx context.Context, markFlags
 
 type addKnownFlagsRequestBody struct {
 	accessTokenHavingObject
-	NewFlags []string `json:"newFlags"`
+	NewFlags []string `json:"newFlags" validate:"required"`
 }
 
 type addKnownFlagsResponseBody struct {
-	FlagIds []int64 `json:"flagIds"`
+	FlagIds []int64 `json:"flagIds" validate:"required"`
 }
 
 func (flagsController *flagsController) addKnownFlags(ctx context.Context, addKnownFlagsRequestBody *addKnownFlagsRequestBody) (*addKnownFlagsResponseBody, error) {
@@ -84,8 +84,8 @@ type getKnownFlagsRequestBody struct {
 }
 
 type getKnownFlagsResponseBodyFlag struct {
-	Id   int64  `json:"id"`
-	Name string `json:"name"`
+	Id   int64  `json:"id" validate:"required"`
+	Name string `json:"name" validate:"required"`
 }
 
 func newGetKnownFlagsResponseBodyFlag(id int64, name string) getKnownFlagsResponseBodyFlag {
@@ -96,7 +96,7 @@ func newGetKnownFlagsResponseBodyFlag(id int64, name string) getKnownFlagsRespon
 }
 
 type getKnownFlagsResponseBody struct {
-	Flags []getKnownFlagsResponseBodyFlag `json:"flags"`
+	Flags []getKnownFlagsResponseBodyFlag `json:"flags" validate:"required"`
 }
 
 func (flagsController *flagsController) getKnownFlags(ctx context.Context, request *getKnownFlagsRequestBody) (*getKnownFlagsResponseBody, error) {

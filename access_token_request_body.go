@@ -1,5 +1,5 @@
 package main
 
 type accessTokenHavingObject struct {
-	AccessToken string `json:"accessToken"`
+	AccessToken string `json:"accessToken" validate:"required"`
 }

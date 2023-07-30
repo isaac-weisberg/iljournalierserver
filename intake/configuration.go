@@ -9,8 +9,8 @@ import (
 )
 
 type IntakeConfigurationTransport struct {
-	Network string `json:"network"`
-	Address string `json:"address"`
+	Network string `json:"network" validate:"required"`
+	Address string `json:"address" validate:"required"`
 }
 
 func (transport *IntakeConfigurationTransport) checkForErrors() error {
@@ -22,8 +22,8 @@ func (transport *IntakeConfigurationTransport) checkForErrors() error {
 }
 
 type IntakeConfiguration struct {
-	DbPath    string                       `json:"dbPath"`
-	Transport IntakeConfigurationTransport `json:"transport"`
+	DbPath    string                       `json:"dbPath" validate:"required" validate:"required"`
+	Transport IntakeConfigurationTransport `json:"transport" validate:"required" validate:"required"`
 }
 
 func ReadIntakeConfiguration() (*IntakeConfiguration, error) {

@@ -17,7 +17,7 @@ func newUserController(userService *services.UserService) userController {
 
 type createUserResponseBody struct {
 	accessTokenHavingObject
-	LoginKey string `json:"loginKey"`
+	LoginKey string `json:"loginKey" validate:"required"`
 }
 
 func (uc *userController) createUser(ctx context.Context) (*createUserResponseBody, error) {
@@ -38,7 +38,7 @@ func (uc *userController) createUser(ctx context.Context) (*createUserResponseBo
 }
 
 type loginRequestBody struct {
-	LoginKey string `json:"loginKey"`
+	LoginKey string `json:"loginKey" validate:"required"`
 }
 
 type loginResponseBody struct {

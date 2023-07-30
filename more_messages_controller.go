@@ -19,9 +19,9 @@ func newMoreMessagesController(moreMessagesService *services.MoreMessagesService
 type addMoreMessageRequestBody struct {
 	accessTokenHavingObject
 	Requests []struct {
-		UnixSeconds int64  `json:"unixSeconds"`
-		Msg         string `json:"msg"`
-	} `json:"requests"`
+		UnixSeconds int64  `json:"unixSeconds" validate:"required"`
+		Msg         string `json:"msg" validate:"required"`
+	} `json:"requests" validate:"required"`
 }
 
 func (moreMessagesController *moreMessagesController) addMoreMessages(

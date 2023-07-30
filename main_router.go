@@ -70,23 +70,22 @@ func (router *mainRouter) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func parseJson[R any](input io.ReadCloser) (*R, error) {
+func parseJsonBody[R interface{}](input io.ReadCloser) (*R, error) {
 	var body, err = io.ReadAll(input)
 	if err != nil {
 		return nil, errors.J(err, "failed parsing")
 	}
 
-	var parsedBody R
-	err = json.Unmarshal(body, &parsedBody)
+	parsedBody, err := utils.ParseJson[R](body)
 	if err != nil {
-		return nil, errors.J(err, "parsing json failed")
+		return nil, errors.J(err, "parsing body failed")
 	}
 
-	return &parsedBody, nil
+	return parsedBody, nil
 }
 
 func (router *mainRouter) login(r *http.Request) (*[]byte, error) {
-	loginRequestBody, err := parseJson[loginRequestBody](r.Body)
+	loginRequestBody, err := parseJsonBody[loginRequestBody](r.Body)
 	if err != nil {
 		return nil, errors.J(err, "parse body failed")
 	}
@@ -119,7 +118,7 @@ func (router *mainRouter) createUser(r *http.Request) (*[]byte, error) {
 }
 
 func (router *mainRouter) addMoreMessage(r *http.Request) (*[]byte, error) {
-	addMoreMessageRequestBody, err := parseJson[addMoreMessageRequestBody](r.Body)
+	addMoreMessageRequestBody, err := parseJsonBody[addMoreMessageRequestBody](r.Body)
 	if err != nil {
 		return nil, errors.J(err, "parse json failed")
 	}
@@ -133,7 +132,7 @@ func (router *mainRouter) addMoreMessage(r *http.Request) (*[]byte, error) {
 }
 
 func (router *mainRouter) markFlags(r *http.Request) (*[]byte, error) {
-	markFlagsRequestBody, err := parseJson[markFlagsRequestBody](r.Body)
+	markFlagsRequestBody, err := parseJsonBody[markFlagsRequestBody](r.Body)
 	if err != nil {
 		return nil, errors.J(err, "parsing body failed")
 	}
@@ -147,7 +146,7 @@ func (router *mainRouter) markFlags(r *http.Request) (*[]byte, error) {
 }
 
 func (router *mainRouter) addKnownFlags(r *http.Request) (*[]byte, error) {
-	addKnownFlagsRequestBody, err := parseJson[addKnownFlagsRequestBody](r.Body)
+	addKnownFlagsRequestBody, err := parseJsonBody[addKnownFlagsRequestBody](r.Body)
 	if err != nil {
 		return nil, errors.J(err, "parsing body failed")
 	}
@@ -166,7 +165,7 @@ func (router *mainRouter) addKnownFlags(r *http.Request) (*[]byte, error) {
 }
 
 func (router *mainRouter) getKnownFlags(r *http.Request) (*[]byte, error) {
-	getKnownFlagsRequestBody, err := parseJson[getKnownFlagsRequestBody](r.Body)
+	getKnownFlagsRequestBody, err := parseJsonBody[getKnownFlagsRequestBody](r.Body)
 	if err != nil {
 		return nil, errors.J(err, "parsing request body failed")
 	}
