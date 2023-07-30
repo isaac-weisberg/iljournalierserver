@@ -1,4 +1,4 @@
-
+.SILENT: run
 
 default: run
 

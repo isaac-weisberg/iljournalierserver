@@ -1,3 +1,7 @@
 {
-    "dbPath": "./iljournalierAlpha"
+    "dbPath": "./iljournalierAlpha",
+    "transport": {
+        "network": "tcp",
+        "address": ":24610"
+    }
 }

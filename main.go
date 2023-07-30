@@ -2,44 +2,51 @@ package main
 
 import (
 	"context"
+	"net"
 	"net/http"
 	"os"
 	"os/signal"
 	"time"
 
+	"caroline-weisberg.fun/iljournalierserver/errors"
 	"caroline-weisberg.fun/iljournalierserver/intake"
 	"caroline-weisberg.fun/iljournalierserver/utils"
 )
 
 func main() {
-	var intakeConfig, err = intake.ReadIntakeConfiguration()
+	utils.AlwaysLog("IlJournalierServer: start!")
+
+	intakeConfig, err := intake.ReadIntakeConfiguration()
 	if err != nil {
-		utils.AlwaysLog(err.Error())
+		utils.AlwaysLog(errors.J(err, "Read Intake Configuration failed").Error())
 		return
 	}
-
-	utils.AlwaysLog("IlJournalierServer: start!")
 
 	ctx := context.Background()
 
 	diContainer, err := newDIContainer(ctx, intakeConfig)
 
 	if err != nil {
-		panic(err)
+		utils.AlwaysLog(errors.J(err, "create di container failed").Error())
+		return
 	}
 
 	mainRouter := newMainRouter(diContainer)
 
 	mux := http.NewServeMux()
-
 	mux.Handle("/", &mainRouter)
 
-	listenAddress := ":24610"
-	server := http.Server{Addr: listenAddress, Handler: mux}
+	server := http.Server{Handler: mux}
+
+	listener, err := net.Listen(intakeConfig.Transport.Network, intakeConfig.Transport.Address)
+	if err != nil {
+		utils.AlwaysLog(errors.J(err, "create listener failed").Error())
+		return
+	}
 
 	go func() {
-		utils.AlwaysLog("IlJournalierServer: will listen", listenAddress)
-		err := server.ListenAndServe()
+		utils.AlwaysLog("IlJournalierServer: will listen", intakeConfig.Transport.Network, intakeConfig.Transport.Address)
+		err := server.Serve(listener)
 		if err != nil {
 			utils.AlwaysLog("IlJournalierServer: returned", err.Error())
 		}
