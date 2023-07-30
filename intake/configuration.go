@@ -22,8 +22,8 @@ func (transport *IntakeConfigurationTransport) checkForErrors() error {
 }
 
 type IntakeConfiguration struct {
-	DbPath    string                       `json:"dbPath" validate:"required" validate:"required"`
-	Transport IntakeConfigurationTransport `json:"transport" validate:"required" validate:"required"`
+	DbPath    string                       `json:"dbPath" validate:"required"`
+	Transport IntakeConfigurationTransport `json:"transport" validate:"required"`
 }
 
 func ReadIntakeConfiguration() (*IntakeConfiguration, error) {

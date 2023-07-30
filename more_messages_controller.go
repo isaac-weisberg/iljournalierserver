@@ -19,7 +19,7 @@ func newMoreMessagesController(moreMessagesService *services.MoreMessagesService
 type addMoreMessageRequestBody struct {
 	accessTokenHavingObject
 	Requests []struct {
-		UnixSeconds int64  `json:"unixSeconds" validate:"required"`
+		UnixSeconds *int64 `json:"unixSeconds" validate:"required"`
 		Msg         string `json:"msg" validate:"required"`
 	} `json:"requests" validate:"required"`
 }
@@ -34,7 +34,7 @@ func (moreMessagesController *moreMessagesController) addMoreMessages(
 
 	var addMoreMessageRequests = make([]models.AddMessageRequest, 0, len(addMoreMessageRequestBody.Requests))
 	for _, request := range addMoreMessageRequestBody.Requests {
-		addMoreMessageRequests = append(addMoreMessageRequests, models.NewAddMessageRequest(request.UnixSeconds, request.Msg))
+		addMoreMessageRequests = append(addMoreMessageRequests, models.NewAddMessageRequest(*request.UnixSeconds, request.Msg))
 	}
 
 	var err = moreMessagesController.moreMessagesService.AddMessage(

@@ -19,8 +19,8 @@ func newFlagsController(flagsService *services.FlagsService) flagsController {
 }
 
 type MarkFlagRequest struct {
-	UnixSeconds int64 `json:"unixSeconds" validate:"required"`
-	FlagId      int64 `json:"flagId" validate:"required"`
+	UnixSeconds *int64 `json:"unixSeconds" validate:"required"`
+	FlagId      *int64 `json:"flagId" validate:"required"`
 }
 
 type markFlagsRequestBody struct {
@@ -36,8 +36,8 @@ func (flagsController *flagsController) markFlags(ctx context.Context, markFlags
 	markFlagsRequests := make([]transaction.MarkFlagRequest, 0, len(markFlagsRequestBody.Requests))
 	for _, request := range markFlagsRequestBody.Requests {
 		markFlagsRequests = append(markFlagsRequests, transaction.MarkFlagRequest{
-			UnixSeconds: request.UnixSeconds,
-			FlagId:      request.FlagId,
+			UnixSeconds: *request.UnixSeconds,
+			FlagId:      *request.FlagId,
 		})
 	}
 
@@ -84,13 +84,13 @@ type getKnownFlagsRequestBody struct {
 }
 
 type getKnownFlagsResponseBodyFlag struct {
-	Id   int64  `json:"id" validate:"required"`
+	Id   *int64 `json:"id" validate:"required"`
 	Name string `json:"name" validate:"required"`
 }
 
 func newGetKnownFlagsResponseBodyFlag(id int64, name string) getKnownFlagsResponseBodyFlag {
 	return getKnownFlagsResponseBodyFlag{
-		Id:   id,
+		Id:   &id,
 		Name: name,
 	}
 }
