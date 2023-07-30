@@ -8,9 +8,9 @@ import (
 )
 
 func (transaction *Transaction) CreateUsersTable() error {
-	sql := "CREATE TABLE users (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, magicKey TEXT NOT NULL UNIQUE)"
+	query := "CREATE TABLE users (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, magicKey TEXT NOT NULL UNIQUE)"
 
-	_, err := transaction.Exec(sql)
+	_, err := transaction.Exec(query)
 	if err != nil {
 		return errors.J(err, "create table failed")
 	}
@@ -19,9 +19,9 @@ func (transaction *Transaction) CreateUsersTable() error {
 }
 
 func (transaction *Transaction) CreateUser(magicKey string) (*int64, error) {
-	sql := "INSERT INTO users (magicKey) VALUES (?)"
+	query := "INSERT INTO users (magicKey) VALUES (?)"
 
-	result, err := transaction.Exec(sql, magicKey)
+	result, err := transaction.Exec(query, magicKey)
 	if err != nil {
 		return nil, errors.J(err, fmt.Sprintf("insert failed %s", magicKey))
 	}

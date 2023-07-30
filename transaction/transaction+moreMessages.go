@@ -8,7 +8,7 @@ import (
 )
 
 func (transaction *Transaction) CreateMoreMessagesTable() error {
-	sql := `
+	query := `
 	CREATE TABLE moreMessages (
 		id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, 
 		userId INTEGER NOT NULL,
@@ -17,7 +17,7 @@ func (transaction *Transaction) CreateMoreMessagesTable() error {
 		FOREIGN KEY (userId) REFERENCES users(id)
 	)`
 
-	_, err := transaction.Exec(sql)
+	_, err := transaction.Exec(query)
 	if err != nil {
 		return errors.J(err, "create table failed")
 	}

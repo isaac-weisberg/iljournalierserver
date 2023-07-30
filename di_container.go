@@ -16,7 +16,7 @@ type diContainer struct {
 }
 
 func newDIContainer(ctx context.Context) (*diContainer, error) {
-	databaseService, err := services.NewDatabaseService(ctx)
+	databaseService, err := services.NewDatabaseService()
 
 	if err != nil {
 		return nil, errors.J(err, "database creation failed")

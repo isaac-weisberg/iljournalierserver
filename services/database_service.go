@@ -13,7 +13,7 @@ type DatabaseService struct {
 	db *sql.DB
 }
 
-func NewDatabaseService(ctx context.Context) (*DatabaseService, error) {
+func NewDatabaseService() (*DatabaseService, error) {
 	db, err := sql.Open("sqlite3", "iljournalierAlpha")
 
 	if err != nil {
