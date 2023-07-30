@@ -2,19 +2,27 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"os"
 	"os/signal"
 	"time"
+
+	"caroline-weisberg.fun/iljournalierserver/intake"
+	"caroline-weisberg.fun/iljournalierserver/utils"
 )
 
 func main() {
-	fmt.Println("IlJournalierServer: start!")
+	var intakeConfig, err = intake.ReadIntakeConfiguration()
+	if err != nil {
+		utils.AlwaysLog(err.Error())
+		return
+	}
+
+	utils.AlwaysLog("IlJournalierServer: start!")
 
 	ctx := context.Background()
 
-	diContainer, err := newDIContainer(ctx)
+	diContainer, err := newDIContainer(ctx, intakeConfig)
 
 	if err != nil {
 		panic(err)
@@ -30,10 +38,10 @@ func main() {
 	server := http.Server{Addr: listenAddress, Handler: mux}
 
 	go func() {
-		fmt.Println("IlJournalierServer: will listen", listenAddress)
+		utils.AlwaysLog("IlJournalierServer: will listen", listenAddress)
 		err := server.ListenAndServe()
 		if err != nil {
-			println("IlJournalierServer: returned", err.Error())
+			utils.AlwaysLog("IlJournalierServer: returned", err.Error())
 		}
 	}()
 
@@ -46,8 +54,8 @@ func main() {
 	defer cancel()
 	err = server.Shutdown(ctx)
 	if err != nil {
-		fmt.Println("IlJournalierServer: shutting down", err.Error())
+		utils.AlwaysLog("IlJournalierServer: shutting down", err.Error())
 	} else {
-		fmt.Println("IlJournalierServer: shutting down")
+		utils.AlwaysLog("IlJournalierServer: shutting down")
 	}
 }

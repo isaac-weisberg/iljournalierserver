@@ -5,6 +5,7 @@ import (
 	"database/sql"
 
 	"caroline-weisberg.fun/iljournalierserver/errors"
+	"caroline-weisberg.fun/iljournalierserver/intake"
 	"caroline-weisberg.fun/iljournalierserver/transaction"
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -13,8 +14,8 @@ type DatabaseService struct {
 	db *sql.DB
 }
 
-func NewDatabaseService() (*DatabaseService, error) {
-	db, err := sql.Open("sqlite3", "iljournalierAlpha")
+func NewDatabaseService(intakeConfig *intake.IntakeConfiguration) (*DatabaseService, error) {
+	db, err := sql.Open("sqlite3", intakeConfig.DbPath)
 
 	if err != nil {
 		return nil, err
