@@ -6,6 +6,7 @@ import (
 	"caroline-weisberg.fun/iljournalierserver/errors"
 	"caroline-weisberg.fun/iljournalierserver/services"
 	"caroline-weisberg.fun/iljournalierserver/transaction"
+	gojason "github.com/isaac-weisberg/go-jason"
 )
 
 type flagsController struct {
@@ -24,7 +25,8 @@ type MarkFlagRequest struct {
 }
 
 type markFlagsRequestBody struct {
-	accessTokenHavingObject
+	accessTokenHavingLegacy
+
 	Requests []MarkFlagRequest `json:"requests" validate:"required"`
 }
 
@@ -50,7 +52,7 @@ func (flagsController *flagsController) markFlags(ctx context.Context, markFlags
 }
 
 type addKnownFlagsRequestBody struct {
-	accessTokenHavingObject
+	accessTokenHavingLegacy
 	NewFlags []string `json:"newFlags" validate:"required"`
 }
 
@@ -80,7 +82,9 @@ func (flagsController *flagsController) addKnownFlags(ctx context.Context, addKn
 }
 
 type getKnownFlagsRequestBody struct {
-	accessTokenHavingObject
+	gojason.Decodable
+
+	accessTokenHavingRequest
 }
 
 type getKnownFlagsResponseBodyFlag struct {
@@ -100,7 +104,7 @@ type getKnownFlagsResponseBody struct {
 }
 
 func (flagsController *flagsController) getKnownFlags(ctx context.Context, request *getKnownFlagsRequestBody) (*getKnownFlagsResponseBody, error) {
-	flagModels, err := flagsController.flagsService.GetKnownFlagsForUser(ctx, request.AccessToken)
+	flagModels, err := flagsController.flagsService.GetKnownFlagsForUser(ctx, request.accessToken)
 	if err != nil {
 		return nil, errors.J(err, "controller getKnownFlags for user failed")
 	}

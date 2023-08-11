@@ -16,7 +16,7 @@ func newUserController(userService *services.UserService) userController {
 }
 
 type createUserResponseBody struct {
-	accessTokenHavingObject
+	accessTokenHavingLegacy
 	LoginKey string `json:"loginKey" validate:"required"`
 }
 
@@ -28,7 +28,7 @@ func (uc *userController) createUser(ctx context.Context) (*createUserResponseBo
 	}
 
 	createUserResBody := createUserResponseBody{
-		accessTokenHavingObject: accessTokenHavingObject{
+		accessTokenHavingLegacy: accessTokenHavingLegacy{
 			AccessToken: user.AccessToken,
 		},
 		LoginKey: user.MagicKey,
@@ -42,7 +42,7 @@ type loginRequestBody struct {
 }
 
 type loginResponseBody struct {
-	accessTokenHavingObject
+	accessTokenHavingLegacy
 }
 
 func (uc *userController) login(ctx context.Context, loginRequestBody *loginRequestBody) (*loginResponseBody, error) {
@@ -52,7 +52,7 @@ func (uc *userController) login(ctx context.Context, loginRequestBody *loginRequ
 	}
 
 	response := loginResponseBody{
-		accessTokenHavingObject{
+		accessTokenHavingLegacy{
 			AccessToken: loginSuccess.AccessToken,
 		},
 	}

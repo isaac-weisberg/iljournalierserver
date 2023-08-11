@@ -10,7 +10,7 @@ import (
 	values "github.com/isaac-weisberg/go-jason/values"
 )
 
-func makeAccessTokenHavingObjectFromJson(bytes []byte) (*accessTokenHavingObject, error) {
+func makeAccessTokenHavingRequestFromJson(bytes []byte) (*accessTokenHavingRequest, error) {
 	var j = errors.Join
 	var e = errors.New
 
@@ -24,7 +24,7 @@ func makeAccessTokenHavingObjectFromJson(bytes []byte) (*accessTokenHavingObject
 		return nil, j(e("interpreting root json value as an object failed"), err)
 	}
 
-	parsedObject, err := parseAccessTokenHavingObjectFromJsonObject(rootObject)
+	parsedObject, err := parseAccessTokenHavingRequestFromJsonObject(rootObject)
 	if err != nil {
 		return nil, j(e("parsing json into the resulting value failed"), err)
 	}
@@ -32,27 +32,70 @@ func makeAccessTokenHavingObjectFromJson(bytes []byte) (*accessTokenHavingObject
 	return parsedObject, nil
 }
 
-func parseAccessTokenHavingObjectFromJsonObject(rootObject *values.JsonValueObject) (*accessTokenHavingObject, error) {
+func parseAccessTokenHavingRequestFromJsonObject(rootObject *values.JsonValueObject) (*accessTokenHavingRequest, error) {
 	var j = errors.Join
 	var e = errors.New
 
 	var stringKeyValues = rootObject.StringKeyedKeyValuesOnly()
+	_ = stringKeyValues
 
-	valueForAccessTokenKey, exists := stringKeyValues["AccessToken"]
+	valueForAccessTokenKey, exists := stringKeyValues["accessToken"]
 	if !exists {
-		return nil, j(e("value not found for key 'AccessToken'"))
+		return nil, j(e("value not found for key 'accessToken'"))
 	}
 	valueForAccessTokenKeyAsStringValue, err := valueForAccessTokenKey.AsString()
 	if err != nil {
-		return nil, j(e("interpreting JsonAny as String failed for key 'AccessToken'"), err)
+		return nil, j(e("interpreting JsonAny as String failed for key 'accessToken'"), err)
 	}
 	parsedStringForAccessTokenKey := valueForAccessTokenKeyAsStringValue.String
 
 	var decodable = gojason.Decodable{}
-	var resultingStructAccessTokenHavingObject = accessTokenHavingObject{
+	var resultingStructAccessTokenHavingRequest = accessTokenHavingRequest{
 		Decodable: decodable,
-		AccessToken: parsedStringForAccessTokenKey,
+		accessToken: parsedStringForAccessTokenKey,
 	}
-	return &resultingStructAccessTokenHavingObject, nil
+	return &resultingStructAccessTokenHavingRequest, nil
+}
+
+func makeGetKnownFlagsRequestBodyFromJson(bytes []byte) (*getKnownFlagsRequestBody, error) {
+	var j = errors.Join
+	var e = errors.New
+
+	rootValueAny, err := parser.Parse(bytes)
+	if err != nil {
+		return nil, j(e("parsing json into an object tree failed"), err)
+	}
+
+	rootObject, err := rootValueAny.AsObject()
+	if err != nil {
+		return nil, j(e("interpreting root json value as an object failed"), err)
+	}
+
+	parsedObject, err := parseGetKnownFlagsRequestBodyFromJsonObject(rootObject)
+	if err != nil {
+		return nil, j(e("parsing json into the resulting value failed"), err)
+	}
+
+	return parsedObject, nil
+}
+
+func parseGetKnownFlagsRequestBodyFromJsonObject(rootObject *values.JsonValueObject) (*getKnownFlagsRequestBody, error) {
+	var j = errors.Join
+	var e = errors.New
+
+	var stringKeyValues = rootObject.StringKeyedKeyValuesOnly()
+	_ = stringKeyValues
+
+	valueForEmbeddedAccessTokenHavingRequest, err := parseAccessTokenHavingRequestFromJsonObject(rootObject)
+	if err != nil {
+		return nil, j(e("parsing embedded struct of type 'accessTokenHavingRequest' failed"), err)
+	}
+
+	var decodable = gojason.Decodable{}
+	var resultingStructGetKnownFlagsRequestBody = getKnownFlagsRequestBody{
+		Decodable: decodable,
+		accessTokenHavingRequest: *valueForEmbeddedAccessTokenHavingRequest,
+	}
+	return &resultingStructGetKnownFlagsRequestBody, nil
 }
 
