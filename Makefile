@@ -7,3 +7,6 @@ run:
 
 build_prod:
 	go build -ldflags "-s -w"
+
+gen:
+	go run github.com/isaac-weisberg/go-jason-gen@v0.1.2 .
