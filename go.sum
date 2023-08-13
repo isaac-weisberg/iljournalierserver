@@ -12,6 +12,8 @@ github.com/gofrs/uuid v4.4.0+incompatible h1:3qXRTX8/NbyulANqlc0lchS1gqAVxRgsuW1
 github.com/gofrs/uuid v4.4.0+incompatible/go.mod h1:b2aQJv3Z4Fp6yNu3cdSllBxTCLRxnplIgP/c0N/04lM=
 github.com/isaac-weisberg/go-jason v0.2.0 h1:DbJC8A+z1YIcuz+T41ubJcAP6fY2X1xXM1b+6Txw0r8=
 github.com/isaac-weisberg/go-jason v0.2.0/go.mod h1:DNi0GeY9LwV5eG85WMScXA6CRZgTzWWAcplnZWiE6zk=
+github.com/isaac-weisberg/go-jason v0.3.0 h1:VPYQgScc1F2D+vdpGj2v8RKDa3K3+kfLwnn4q/goP/c=
+github.com/isaac-weisberg/go-jason v0.3.0/go.mod h1:DNi0GeY9LwV5eG85WMScXA6CRZgTzWWAcplnZWiE6zk=
 github.com/leodido/go-urn v1.2.4 h1:XlAE/cm/ms7TE/VMVoduSpNBoyc2dOxHs5MZSwAN63Q=
 github.com/leodido/go-urn v1.2.4/go.mod h1:7ZrI8mTSeBSHl/UaRyKQW1qZeMgak41ANeCNaVckg+4=
 github.com/mattn/go-sqlite3 v1.14.17 h1:mCRHCLDUBXgpKAqIKsaAaAsrAlbkeomtRFKXh2L6YIM=

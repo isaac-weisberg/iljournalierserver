@@ -4,15 +4,20 @@ package main
 
 import (
 	"errors"
+	"fmt"
 
 	gojason "github.com/isaac-weisberg/go-jason"
 	parser "github.com/isaac-weisberg/go-jason/parser"
 	values "github.com/isaac-weisberg/go-jason/values"
 )
 
+// just in case, if variable is unused, we mention it as a param to this no-op func - and then, it's suddenly very well used :)
+func UNUSED(arg any) {}
+
 func makeAccessTokenHavingRequestFromJson(bytes []byte) (*accessTokenHavingRequest, error) {
 	var j = errors.Join
 	var e = errors.New
+	UNUSED(fmt.Sprintf)
 
 	rootValueAny, err := parser.Parse(bytes)
 	if err != nil {
@@ -37,7 +42,7 @@ func parseAccessTokenHavingRequestFromJsonObject(rootObject *values.JsonValueObj
 	var e = errors.New
 
 	var stringKeyValues = rootObject.StringKeyedKeyValuesOnly()
-	_ = stringKeyValues
+	UNUSED(stringKeyValues)
 
 	valueForAccessTokenKey, exists := stringKeyValues["accessToken"]
 	if !exists {
@@ -60,6 +65,7 @@ func parseAccessTokenHavingRequestFromJsonObject(rootObject *values.JsonValueObj
 func makeGetKnownFlagsRequestBodyFromJson(bytes []byte) (*getKnownFlagsRequestBody, error) {
 	var j = errors.Join
 	var e = errors.New
+	UNUSED(fmt.Sprintf)
 
 	rootValueAny, err := parser.Parse(bytes)
 	if err != nil {
@@ -84,7 +90,7 @@ func parseGetKnownFlagsRequestBodyFromJsonObject(rootObject *values.JsonValueObj
 	var e = errors.New
 
 	var stringKeyValues = rootObject.StringKeyedKeyValuesOnly()
-	_ = stringKeyValues
+	UNUSED(stringKeyValues)
 
 	valueForEmbeddedAccessTokenHavingRequest, err := parseAccessTokenHavingRequestFromJsonObject(rootObject)
 	if err != nil {
