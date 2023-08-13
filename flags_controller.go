@@ -20,30 +20,33 @@ func newFlagsController(flagsService *services.FlagsService) flagsController {
 }
 
 type MarkFlagRequest struct {
-	UnixSeconds *int64 `json:"unixSeconds" validate:"required"`
-	FlagId      *int64 `json:"flagId" validate:"required"`
+	gojason.Decodable
+
+	unixSeconds int64
+	flagId      int64
 }
 
 type markFlagsRequestBody struct {
-	accessTokenHavingLegacy
+	gojason.Decodable
 
-	Requests []MarkFlagRequest `json:"requests" validate:"required"`
+	accessTokenHavingRequest
+	requests []MarkFlagRequest
 }
 
 func (flagsController *flagsController) markFlags(ctx context.Context, markFlagsRequestBody *markFlagsRequestBody) error {
-	if len(markFlagsRequestBody.Requests) == 0 {
+	if len(markFlagsRequestBody.requests) == 0 {
 		return errors.E("mark flags request body had no mark requests")
 	}
 
-	markFlagsRequests := make([]transaction.MarkFlagRequest, 0, len(markFlagsRequestBody.Requests))
-	for _, request := range markFlagsRequestBody.Requests {
+	markFlagsRequests := make([]transaction.MarkFlagRequest, 0, len(markFlagsRequestBody.requests))
+	for _, request := range markFlagsRequestBody.requests {
 		markFlagsRequests = append(markFlagsRequests, transaction.MarkFlagRequest{
-			UnixSeconds: *request.UnixSeconds,
-			FlagId:      *request.FlagId,
+			UnixSeconds: request.unixSeconds,
+			FlagId:      request.flagId,
 		})
 	}
 
-	err := flagsController.flagsService.MarkFlags(ctx, markFlagsRequestBody.AccessToken, markFlagsRequests)
+	err := flagsController.flagsService.MarkFlags(ctx, markFlagsRequestBody.accessToken, markFlagsRequests)
 	if err != nil {
 		return errors.J(err, "mark flags failed")
 	}
@@ -52,8 +55,10 @@ func (flagsController *flagsController) markFlags(ctx context.Context, markFlags
 }
 
 type addKnownFlagsRequestBody struct {
-	accessTokenHavingLegacy
-	NewFlags []string `json:"newFlags" validate:"required"`
+	gojason.Decodable
+
+	accessTokenHavingRequest
+	newFlags []string
 }
 
 type addKnownFlagsResponseBody struct {
@@ -61,14 +66,14 @@ type addKnownFlagsResponseBody struct {
 }
 
 func (flagsController *flagsController) addKnownFlags(ctx context.Context, addKnownFlagsRequestBody *addKnownFlagsRequestBody) (*addKnownFlagsResponseBody, error) {
-	if len(addKnownFlagsRequestBody.NewFlags) == 0 {
+	if len(addKnownFlagsRequestBody.newFlags) == 0 {
 		return nil, errors.E("no new flags are suggested")
 	}
 
 	flagIds, err := flagsController.flagsService.AddKnownFlags(
 		ctx,
-		addKnownFlagsRequestBody.AccessToken,
-		addKnownFlagsRequestBody.NewFlags,
+		addKnownFlagsRequestBody.accessToken,
+		addKnownFlagsRequestBody.newFlags,
 	)
 	if err != nil {
 		return nil, errors.J(err, "add known flags service failed")

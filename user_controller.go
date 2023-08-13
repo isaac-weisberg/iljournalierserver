@@ -5,6 +5,7 @@ import (
 
 	"caroline-weisberg.fun/iljournalierserver/errors"
 	"caroline-weisberg.fun/iljournalierserver/services"
+	gojason "github.com/isaac-weisberg/go-jason"
 )
 
 type userController struct {
@@ -38,7 +39,9 @@ func (uc *userController) createUser(ctx context.Context) (*createUserResponseBo
 }
 
 type loginRequestBody struct {
-	LoginKey string `json:"loginKey" validate:"required"`
+	gojason.Decodable
+
+	loginKey string
 }
 
 type loginResponseBody struct {
@@ -46,7 +49,7 @@ type loginResponseBody struct {
 }
 
 func (uc *userController) login(ctx context.Context, loginRequestBody *loginRequestBody) (*loginResponseBody, error) {
-	loginSuccess, err := uc.userService.Login(loginRequestBody.LoginKey, ctx)
+	loginSuccess, err := uc.userService.Login(loginRequestBody.loginKey, ctx)
 	if err != nil {
 		return nil, errors.J(err, "user service login failed")
 	}

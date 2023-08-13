@@ -6,6 +6,7 @@ import (
 	"caroline-weisberg.fun/iljournalierserver/errors"
 	"caroline-weisberg.fun/iljournalierserver/models"
 	"caroline-weisberg.fun/iljournalierserver/services"
+	gojason "github.com/isaac-weisberg/go-jason"
 )
 
 type moreMessagesController struct {
@@ -16,30 +17,36 @@ func newMoreMessagesController(moreMessagesService *services.MoreMessagesService
 	return moreMessagesController{moreMessagesService: moreMessagesService}
 }
 
+type addMoreMessageRequest struct {
+	gojason.Decodable
+
+	unixSeconds int64
+	msg         string
+}
+
 type addMoreMessageRequestBody struct {
-	accessTokenHavingLegacy
-	Requests []struct {
-		UnixSeconds *int64 `json:"unixSeconds" validate:"required"`
-		Msg         string `json:"msg" validate:"required"`
-	} `json:"requests" validate:"required"`
+	gojason.Decodable
+
+	accessTokenHavingRequest
+	requests []addMoreMessageRequest
 }
 
 func (moreMessagesController *moreMessagesController) addMoreMessages(
 	ctx context.Context,
 	addMoreMessageRequestBody *addMoreMessageRequestBody,
 ) error {
-	if len(addMoreMessageRequestBody.Requests) == 0 {
+	if len(addMoreMessageRequestBody.requests) == 0 {
 		return errors.E("can't insert more messages without more message requests")
 	}
 
-	var addMoreMessageRequests = make([]models.AddMessageRequest, 0, len(addMoreMessageRequestBody.Requests))
-	for _, request := range addMoreMessageRequestBody.Requests {
-		addMoreMessageRequests = append(addMoreMessageRequests, models.NewAddMessageRequest(*request.UnixSeconds, request.Msg))
+	var addMoreMessageRequests = make([]models.AddMessageRequest, 0, len(addMoreMessageRequestBody.requests))
+	for _, request := range addMoreMessageRequestBody.requests {
+		addMoreMessageRequests = append(addMoreMessageRequests, models.NewAddMessageRequest(*&request.unixSeconds, request.msg))
 	}
 
 	var err = moreMessagesController.moreMessagesService.AddMessage(
 		ctx,
-		addMoreMessageRequestBody.AccessToken,
+		addMoreMessageRequestBody.accessToken,
 		addMoreMessageRequests,
 	)
 

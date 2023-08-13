@@ -62,6 +62,198 @@ func parseAccessTokenHavingRequestFromJsonObject(rootObject *values.JsonValueObj
 	return &resultingStructAccessTokenHavingRequest, nil
 }
 
+func makeMarkFlagRequestFromJson(bytes []byte) (*MarkFlagRequest, error) {
+	var j = errors.Join
+	var e = errors.New
+	UNUSED(fmt.Sprintf)
+
+	rootValueAny, err := parser.Parse(bytes)
+	if err != nil {
+		return nil, j(e("parsing json into an object tree failed"), err)
+	}
+
+	rootObject, err := rootValueAny.AsObject()
+	if err != nil {
+		return nil, j(e("interpreting root json value as an object failed"), err)
+	}
+
+	parsedObject, err := parseMarkFlagRequestFromJsonObject(rootObject)
+	if err != nil {
+		return nil, j(e("parsing json into the resulting value failed"), err)
+	}
+
+	return parsedObject, nil
+}
+
+func parseMarkFlagRequestFromJsonObject(rootObject *values.JsonValueObject) (*MarkFlagRequest, error) {
+	var j = errors.Join
+	var e = errors.New
+
+	var stringKeyValues = rootObject.StringKeyedKeyValuesOnly()
+	UNUSED(stringKeyValues)
+
+	valueForUnixSecondsKey, exists := stringKeyValues["unixSeconds"]
+	if !exists {
+		return nil, j(e("value not found for key 'unixSeconds'"))
+	}
+	valueForUnixSecondsKeyAsNumberValue, err := valueForUnixSecondsKey.AsNumber()
+	if err != nil {
+		return nil, j(e("interpreting JsonAny as Number failed for key 'unixSeconds'"), err)
+	}
+	parsedInt64ForUnixSecondsKey, err := valueForUnixSecondsKeyAsNumberValue.ParseInt64()
+	if err != nil {
+		return nil, j(e("parsing int64 from Number failed for key 'unixSeconds'"), err)
+	}
+
+	valueForFlagIdKey, exists := stringKeyValues["flagId"]
+	if !exists {
+		return nil, j(e("value not found for key 'flagId'"))
+	}
+	valueForFlagIdKeyAsNumberValue, err := valueForFlagIdKey.AsNumber()
+	if err != nil {
+		return nil, j(e("interpreting JsonAny as Number failed for key 'flagId'"), err)
+	}
+	parsedInt64ForFlagIdKey, err := valueForFlagIdKeyAsNumberValue.ParseInt64()
+	if err != nil {
+		return nil, j(e("parsing int64 from Number failed for key 'flagId'"), err)
+	}
+
+	var decodable = gojason.Decodable{}
+	var resultingStructMarkFlagRequest = MarkFlagRequest{
+		Decodable: decodable,
+		unixSeconds: parsedInt64ForUnixSecondsKey,
+		flagId: parsedInt64ForFlagIdKey,
+	}
+	return &resultingStructMarkFlagRequest, nil
+}
+
+func makeMarkFlagsRequestBodyFromJson(bytes []byte) (*markFlagsRequestBody, error) {
+	var j = errors.Join
+	var e = errors.New
+	UNUSED(fmt.Sprintf)
+
+	rootValueAny, err := parser.Parse(bytes)
+	if err != nil {
+		return nil, j(e("parsing json into an object tree failed"), err)
+	}
+
+	rootObject, err := rootValueAny.AsObject()
+	if err != nil {
+		return nil, j(e("interpreting root json value as an object failed"), err)
+	}
+
+	parsedObject, err := parseMarkFlagsRequestBodyFromJsonObject(rootObject)
+	if err != nil {
+		return nil, j(e("parsing json into the resulting value failed"), err)
+	}
+
+	return parsedObject, nil
+}
+
+func parseMarkFlagsRequestBodyFromJsonObject(rootObject *values.JsonValueObject) (*markFlagsRequestBody, error) {
+	var j = errors.Join
+	var e = errors.New
+
+	var stringKeyValues = rootObject.StringKeyedKeyValuesOnly()
+	UNUSED(stringKeyValues)
+
+	valueForEmbeddedAccessTokenHavingRequest, err := parseAccessTokenHavingRequestFromJsonObject(rootObject)
+	if err != nil {
+		return nil, j(e("parsing embedded struct of type 'accessTokenHavingRequest' failed"), err)
+	}
+
+	valueForRequestsKey, exists := stringKeyValues["requests"]
+	if !exists {
+		return nil, j(e("value not found for key 'requests'"))
+	}
+	valueForRequestsKeyAsArrayValue, err := valueForRequestsKey.AsArray()
+	if err != nil {
+		return nil, j(e("interpreting JsonAny as Array failed for key 'requests'"))
+	}
+	resultingArrayForRequestsKey := make([]MarkFlagRequest, 0, len(valueForRequestsKeyAsArrayValue.Values))
+	for index, element := range valueForRequestsKeyAsArrayValue.Values {
+		elementAsObject, err := element.AsObject()
+		if err != nil {
+			return nil, j(e(fmt.Sprintf("attempted to interpret value at index '%v' of array for key 'requests' as object, but failed", index)), err)
+		}
+		parsedValue, err := parseMarkFlagRequestFromJsonObject(elementAsObject)
+		if err != nil {
+			return nil, j(e(fmt.Sprintf("failed to parse element at index '%v' of array for key 'requests'", index)), err)
+		}
+		resultingArrayForRequestsKey = append(resultingArrayForRequestsKey, *parsedValue)
+	}
+
+	var decodable = gojason.Decodable{}
+	var resultingStructMarkFlagsRequestBody = markFlagsRequestBody{
+		Decodable: decodable,
+		accessTokenHavingRequest: *valueForEmbeddedAccessTokenHavingRequest,
+		requests: resultingArrayForRequestsKey,
+	}
+	return &resultingStructMarkFlagsRequestBody, nil
+}
+
+func makeAddKnownFlagsRequestBodyFromJson(bytes []byte) (*addKnownFlagsRequestBody, error) {
+	var j = errors.Join
+	var e = errors.New
+	UNUSED(fmt.Sprintf)
+
+	rootValueAny, err := parser.Parse(bytes)
+	if err != nil {
+		return nil, j(e("parsing json into an object tree failed"), err)
+	}
+
+	rootObject, err := rootValueAny.AsObject()
+	if err != nil {
+		return nil, j(e("interpreting root json value as an object failed"), err)
+	}
+
+	parsedObject, err := parseAddKnownFlagsRequestBodyFromJsonObject(rootObject)
+	if err != nil {
+		return nil, j(e("parsing json into the resulting value failed"), err)
+	}
+
+	return parsedObject, nil
+}
+
+func parseAddKnownFlagsRequestBodyFromJsonObject(rootObject *values.JsonValueObject) (*addKnownFlagsRequestBody, error) {
+	var j = errors.Join
+	var e = errors.New
+
+	var stringKeyValues = rootObject.StringKeyedKeyValuesOnly()
+	UNUSED(stringKeyValues)
+
+	valueForEmbeddedAccessTokenHavingRequest, err := parseAccessTokenHavingRequestFromJsonObject(rootObject)
+	if err != nil {
+		return nil, j(e("parsing embedded struct of type 'accessTokenHavingRequest' failed"), err)
+	}
+
+	valueForNewFlagsKey, exists := stringKeyValues["newFlags"]
+	if !exists {
+		return nil, j(e("value not found for key 'newFlags'"))
+	}
+	valueForNewFlagsKeyAsArrayValue, err := valueForNewFlagsKey.AsArray()
+	if err != nil {
+		return nil, j(e("interpreting JsonAny as Array failed for key 'newFlags'"))
+	}
+	resultingArrayForNewFlagsKey := make([]string, 0, len(valueForNewFlagsKeyAsArrayValue.Values))
+	for index, element := range valueForNewFlagsKeyAsArrayValue.Values {
+		elementAsString, err := element.AsString()
+		if err != nil {
+			return nil, j(e(fmt.Sprintf("attempted to interpret value at index '%v' of array for key 'newFlags' as String, but failed", index)), err)
+		}
+		parsedValue := elementAsString.String
+		resultingArrayForNewFlagsKey = append(resultingArrayForNewFlagsKey, parsedValue)
+	}
+
+	var decodable = gojason.Decodable{}
+	var resultingStructAddKnownFlagsRequestBody = addKnownFlagsRequestBody{
+		Decodable: decodable,
+		accessTokenHavingRequest: *valueForEmbeddedAccessTokenHavingRequest,
+		newFlags: resultingArrayForNewFlagsKey,
+	}
+	return &resultingStructAddKnownFlagsRequestBody, nil
+}
+
 func makeGetKnownFlagsRequestBodyFromJson(bytes []byte) (*getKnownFlagsRequestBody, error) {
 	var j = errors.Join
 	var e = errors.New
@@ -103,5 +295,180 @@ func parseGetKnownFlagsRequestBodyFromJsonObject(rootObject *values.JsonValueObj
 		accessTokenHavingRequest: *valueForEmbeddedAccessTokenHavingRequest,
 	}
 	return &resultingStructGetKnownFlagsRequestBody, nil
+}
+
+func makeAddMoreMessageRequestFromJson(bytes []byte) (*addMoreMessageRequest, error) {
+	var j = errors.Join
+	var e = errors.New
+	UNUSED(fmt.Sprintf)
+
+	rootValueAny, err := parser.Parse(bytes)
+	if err != nil {
+		return nil, j(e("parsing json into an object tree failed"), err)
+	}
+
+	rootObject, err := rootValueAny.AsObject()
+	if err != nil {
+		return nil, j(e("interpreting root json value as an object failed"), err)
+	}
+
+	parsedObject, err := parseAddMoreMessageRequestFromJsonObject(rootObject)
+	if err != nil {
+		return nil, j(e("parsing json into the resulting value failed"), err)
+	}
+
+	return parsedObject, nil
+}
+
+func parseAddMoreMessageRequestFromJsonObject(rootObject *values.JsonValueObject) (*addMoreMessageRequest, error) {
+	var j = errors.Join
+	var e = errors.New
+
+	var stringKeyValues = rootObject.StringKeyedKeyValuesOnly()
+	UNUSED(stringKeyValues)
+
+	valueForUnixSecondsKey, exists := stringKeyValues["unixSeconds"]
+	if !exists {
+		return nil, j(e("value not found for key 'unixSeconds'"))
+	}
+	valueForUnixSecondsKeyAsNumberValue, err := valueForUnixSecondsKey.AsNumber()
+	if err != nil {
+		return nil, j(e("interpreting JsonAny as Number failed for key 'unixSeconds'"), err)
+	}
+	parsedInt64ForUnixSecondsKey, err := valueForUnixSecondsKeyAsNumberValue.ParseInt64()
+	if err != nil {
+		return nil, j(e("parsing int64 from Number failed for key 'unixSeconds'"), err)
+	}
+
+	valueForMsgKey, exists := stringKeyValues["msg"]
+	if !exists {
+		return nil, j(e("value not found for key 'msg'"))
+	}
+	valueForMsgKeyAsStringValue, err := valueForMsgKey.AsString()
+	if err != nil {
+		return nil, j(e("interpreting JsonAny as String failed for key 'msg'"), err)
+	}
+	parsedStringForMsgKey := valueForMsgKeyAsStringValue.String
+
+	var decodable = gojason.Decodable{}
+	var resultingStructAddMoreMessageRequest = addMoreMessageRequest{
+		Decodable: decodable,
+		unixSeconds: parsedInt64ForUnixSecondsKey,
+		msg: parsedStringForMsgKey,
+	}
+	return &resultingStructAddMoreMessageRequest, nil
+}
+
+func makeAddMoreMessageRequestBodyFromJson(bytes []byte) (*addMoreMessageRequestBody, error) {
+	var j = errors.Join
+	var e = errors.New
+	UNUSED(fmt.Sprintf)
+
+	rootValueAny, err := parser.Parse(bytes)
+	if err != nil {
+		return nil, j(e("parsing json into an object tree failed"), err)
+	}
+
+	rootObject, err := rootValueAny.AsObject()
+	if err != nil {
+		return nil, j(e("interpreting root json value as an object failed"), err)
+	}
+
+	parsedObject, err := parseAddMoreMessageRequestBodyFromJsonObject(rootObject)
+	if err != nil {
+		return nil, j(e("parsing json into the resulting value failed"), err)
+	}
+
+	return parsedObject, nil
+}
+
+func parseAddMoreMessageRequestBodyFromJsonObject(rootObject *values.JsonValueObject) (*addMoreMessageRequestBody, error) {
+	var j = errors.Join
+	var e = errors.New
+
+	var stringKeyValues = rootObject.StringKeyedKeyValuesOnly()
+	UNUSED(stringKeyValues)
+
+	valueForEmbeddedAccessTokenHavingRequest, err := parseAccessTokenHavingRequestFromJsonObject(rootObject)
+	if err != nil {
+		return nil, j(e("parsing embedded struct of type 'accessTokenHavingRequest' failed"), err)
+	}
+
+	valueForRequestsKey, exists := stringKeyValues["requests"]
+	if !exists {
+		return nil, j(e("value not found for key 'requests'"))
+	}
+	valueForRequestsKeyAsArrayValue, err := valueForRequestsKey.AsArray()
+	if err != nil {
+		return nil, j(e("interpreting JsonAny as Array failed for key 'requests'"))
+	}
+	resultingArrayForRequestsKey := make([]addMoreMessageRequest, 0, len(valueForRequestsKeyAsArrayValue.Values))
+	for index, element := range valueForRequestsKeyAsArrayValue.Values {
+		elementAsObject, err := element.AsObject()
+		if err != nil {
+			return nil, j(e(fmt.Sprintf("attempted to interpret value at index '%v' of array for key 'requests' as object, but failed", index)), err)
+		}
+		parsedValue, err := parseAddMoreMessageRequestFromJsonObject(elementAsObject)
+		if err != nil {
+			return nil, j(e(fmt.Sprintf("failed to parse element at index '%v' of array for key 'requests'", index)), err)
+		}
+		resultingArrayForRequestsKey = append(resultingArrayForRequestsKey, *parsedValue)
+	}
+
+	var decodable = gojason.Decodable{}
+	var resultingStructAddMoreMessageRequestBody = addMoreMessageRequestBody{
+		Decodable: decodable,
+		requests: resultingArrayForRequestsKey,
+		accessTokenHavingRequest: *valueForEmbeddedAccessTokenHavingRequest,
+	}
+	return &resultingStructAddMoreMessageRequestBody, nil
+}
+
+func makeLoginRequestBodyFromJson(bytes []byte) (*loginRequestBody, error) {
+	var j = errors.Join
+	var e = errors.New
+	UNUSED(fmt.Sprintf)
+
+	rootValueAny, err := parser.Parse(bytes)
+	if err != nil {
+		return nil, j(e("parsing json into an object tree failed"), err)
+	}
+
+	rootObject, err := rootValueAny.AsObject()
+	if err != nil {
+		return nil, j(e("interpreting root json value as an object failed"), err)
+	}
+
+	parsedObject, err := parseLoginRequestBodyFromJsonObject(rootObject)
+	if err != nil {
+		return nil, j(e("parsing json into the resulting value failed"), err)
+	}
+
+	return parsedObject, nil
+}
+
+func parseLoginRequestBodyFromJsonObject(rootObject *values.JsonValueObject) (*loginRequestBody, error) {
+	var j = errors.Join
+	var e = errors.New
+
+	var stringKeyValues = rootObject.StringKeyedKeyValuesOnly()
+	UNUSED(stringKeyValues)
+
+	valueForLoginKeyKey, exists := stringKeyValues["loginKey"]
+	if !exists {
+		return nil, j(e("value not found for key 'loginKey'"))
+	}
+	valueForLoginKeyKeyAsStringValue, err := valueForLoginKeyKey.AsString()
+	if err != nil {
+		return nil, j(e("interpreting JsonAny as String failed for key 'loginKey'"), err)
+	}
+	parsedStringForLoginKeyKey := valueForLoginKeyKeyAsStringValue.String
+
+	var decodable = gojason.Decodable{}
+	var resultingStructLoginRequestBody = loginRequestBody{
+		Decodable: decodable,
+		loginKey: parsedStringForLoginKeyKey,
+	}
+	return &resultingStructLoginRequestBody, nil
 }
 
