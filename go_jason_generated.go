@@ -121,8 +121,8 @@ func parseMarkFlagRequestFromJsonObject(rootObject *values.JsonValueObject) (*Ma
 	var decodable = gojason.Decodable{}
 	var resultingStructMarkFlagRequest = MarkFlagRequest{
 		Decodable: decodable,
-		unixSeconds: parsedInt64ForUnixSecondsKey,
 		flagId: parsedInt64ForFlagIdKey,
+		unixSeconds: parsedInt64ForUnixSecondsKey,
 	}
 	return &resultingStructMarkFlagRequest, nil
 }
@@ -186,8 +186,8 @@ func parseMarkFlagsRequestBodyFromJsonObject(rootObject *values.JsonValueObject)
 	var decodable = gojason.Decodable{}
 	var resultingStructMarkFlagsRequestBody = markFlagsRequestBody{
 		Decodable: decodable,
-		accessTokenHavingRequest: *valueForEmbeddedAccessTokenHavingRequest,
 		requests: resultingArrayForRequestsKey,
+		accessTokenHavingRequest: *valueForEmbeddedAccessTokenHavingRequest,
 	}
 	return &resultingStructMarkFlagsRequestBody, nil
 }
@@ -418,8 +418,8 @@ func parseAddMoreMessageRequestBodyFromJsonObject(rootObject *values.JsonValueOb
 	var decodable = gojason.Decodable{}
 	var resultingStructAddMoreMessageRequestBody = addMoreMessageRequestBody{
 		Decodable: decodable,
-		requests: resultingArrayForRequestsKey,
 		accessTokenHavingRequest: *valueForEmbeddedAccessTokenHavingRequest,
+		requests: resultingArrayForRequestsKey,
 	}
 	return &resultingStructAddMoreMessageRequestBody, nil
 }
