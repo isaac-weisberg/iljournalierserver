@@ -7,7 +7,3 @@ type accessTokenHavingRequest struct {
 
 	accessToken string
 }
-
-type accessTokenHavingLegacy struct {
-	AccessToken string `json:"accessToken" validate:"required"`
-}

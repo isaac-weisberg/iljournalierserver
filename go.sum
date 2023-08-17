@@ -14,8 +14,12 @@ github.com/isaac-weisberg/go-jason v0.2.0 h1:DbJC8A+z1YIcuz+T41ubJcAP6fY2X1xXM1b
 github.com/isaac-weisberg/go-jason v0.2.0/go.mod h1:DNi0GeY9LwV5eG85WMScXA6CRZgTzWWAcplnZWiE6zk=
 github.com/isaac-weisberg/go-jason v0.3.0 h1:VPYQgScc1F2D+vdpGj2v8RKDa3K3+kfLwnn4q/goP/c=
 github.com/isaac-weisberg/go-jason v0.3.0/go.mod h1:DNi0GeY9LwV5eG85WMScXA6CRZgTzWWAcplnZWiE6zk=
+github.com/josharian/intern v1.0.0 h1:vlS4z54oSdjm0bgjRigI+G1HpF+tI+9rE5LLzOg8HmY=
+github.com/josharian/intern v1.0.0/go.mod h1:5DoeVV0s6jJacbCEi61lwdGj/aVlrQvzHFFd8Hwg//Y=
 github.com/leodido/go-urn v1.2.4 h1:XlAE/cm/ms7TE/VMVoduSpNBoyc2dOxHs5MZSwAN63Q=
 github.com/leodido/go-urn v1.2.4/go.mod h1:7ZrI8mTSeBSHl/UaRyKQW1qZeMgak41ANeCNaVckg+4=
+github.com/mailru/easyjson v0.7.7 h1:UGYAvKxe3sBsEDzO8ZeWOSlIQfWFlxbzLZe7hwFURr0=
+github.com/mailru/easyjson v0.7.7/go.mod h1:xzfreul335JAWq5oZzymOObrkdz5UnU4kGfJJLY9Nlc=
 github.com/mattn/go-sqlite3 v1.14.17 h1:mCRHCLDUBXgpKAqIKsaAaAsrAlbkeomtRFKXh2L6YIM=
 github.com/mattn/go-sqlite3 v1.14.17/go.mod h1:2eHXhiwb8IkHr+BDWZGa96P6+rkvnG63S2DGjv9HUNg=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
