@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"caroline-weisberg.fun/iljournalierserver/errors"
+	"caroline-weisberg.fun/iljournalierserver/requests"
 	"caroline-weisberg.fun/iljournalierserver/services"
 	gojason "github.com/isaac-weisberg/go-jason"
 )
@@ -17,7 +18,7 @@ func newUserController(userService *services.UserService) userController {
 }
 
 type createUserResponseBody struct {
-	accessTokenHavingLegacy
+	requests.AccessTokenHavingLegacy
 	LoginKey string `json:"loginKey" validate:"required"`
 }
 
@@ -29,7 +30,7 @@ func (uc *userController) createUser(ctx context.Context) (*createUserResponseBo
 	}
 
 	createUserResBody := createUserResponseBody{
-		accessTokenHavingLegacy: accessTokenHavingLegacy{
+		accessTokenHavingLegacy: requests.AccessTokenHavingLegacy{
 			AccessToken: user.AccessToken,
 		},
 		LoginKey: user.MagicKey,
@@ -45,7 +46,7 @@ type loginRequestBody struct {
 }
 
 type loginResponseBody struct {
-	accessTokenHavingLegacy
+	requests.AccessTokenHavingLegacy
 }
 
 func (uc *userController) login(ctx context.Context, loginRequestBody *loginRequestBody) (*loginResponseBody, error) {
@@ -55,7 +56,7 @@ func (uc *userController) login(ctx context.Context, loginRequestBody *loginRequ
 	}
 
 	response := loginResponseBody{
-		accessTokenHavingLegacy{
+		requests.AccessTokenHavingLegacy{
 			AccessToken: loginSuccess.AccessToken,
 		},
 	}
