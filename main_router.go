@@ -34,6 +34,7 @@ func (router *mainRouter) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	utils.DebugLog("IlJournalierServer: Got connection!", r.URL)
 	inAppRoute, found := strings.CutPrefix(r.URL.Path, "/iljournalierserver")
 
+	utils.DebugLog("not found", inAppRoute)
 	if !found {
 		router.respond404(w, r)
 		return
@@ -69,7 +70,9 @@ func (router *mainRouter) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		statusCode = 500
 	}
 
+	utils.WriteDebugCorsHeader(w, r)
 	w.WriteHeader(statusCode)
+
 	if resBody != nil {
 		w.Write(*resBody)
 	}
@@ -183,6 +186,7 @@ func (router *mainRouter) handleAndConvert(responseBody *[]byte, err error) (int
 }
 
 func (router *mainRouter) respond404(w http.ResponseWriter, r *http.Request) {
+	utils.WriteDebugCorsHeader(w, r)
 	w.WriteHeader(404)
 }
 
