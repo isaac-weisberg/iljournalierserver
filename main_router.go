@@ -34,7 +34,6 @@ func (router *mainRouter) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	utils.DebugLog("IlJournalierServer: Got connection!", r.URL)
 	inAppRoute, found := strings.CutPrefix(r.URL.Path, "/iljournalierserver")
 
-	utils.DebugLog("not found", inAppRoute)
 	if !found {
 		router.respond404(w, r)
 		return

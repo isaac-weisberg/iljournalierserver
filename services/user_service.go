@@ -19,9 +19,15 @@ func NewUserService(dbService *DatabaseService, randomIdService *RandomIdService
 type CreateUserSuccess struct {
 	AccessToken string
 	MagicKey    string
+	PublicId    string
 }
 
 func (userService *UserService) CreateUser(ctx context.Context) (*CreateUserSuccess, error) {
+	publicUserId, err := userService.generatePublicId()
+	if err != nil {
+		return nil, errors.J(err, "generate publicId failed")
+	}
+
 	magicKey, err := userService.generateMagicKey()
 	if err != nil {
 		return nil, errors.J(err, "generate magicKey failed")
@@ -37,7 +43,7 @@ func (userService *UserService) CreateUser(ctx context.Context) (*CreateUserSucc
 			return nil, errors.J(err, "start tx failed")
 		}
 
-		userId, err := tx.CreateUser(*magicKey)
+		userId, err := tx.CreateUser(*publicUserId, *magicKey)
 		if err != nil {
 			return nil, errors.J(err, "create user failed")
 		}
@@ -50,22 +56,24 @@ func (userService *UserService) CreateUser(ctx context.Context) (*CreateUserSucc
 		return &CreateUserSuccess{
 			AccessToken: *accessToken,
 			MagicKey:    *magicKey,
+			PublicId:    *publicUserId,
 		}, nil
 	})
 }
 
 type LoginSuccess struct {
 	AccessToken string
+	PublicId    string
 }
 
 func (userService *UserService) Login(magicKey string, ctx context.Context) (*LoginSuccess, error) {
 	return BeginTxBlock[LoginSuccess](userService.dbService, ctx, func(tx *transaction.Transaction) (*LoginSuccess, error) {
-		userId, err := tx.FindUserForMagicKey(magicKey)
+		user, err := tx.FindUserForMagicKey(magicKey)
 		if err != nil {
 			return nil, errors.J(err, "find user for magicKey failed")
 		}
 
-		if userId == nil {
+		if user == nil {
 			return nil, errors.UserNotFoundForMagicKey
 		}
 
@@ -74,12 +82,15 @@ func (userService *UserService) Login(magicKey string, ctx context.Context) (*Lo
 			return nil, errors.J(err, "generate accessToken failed")
 		}
 
-		err = tx.CreateAccessToken(*userId, *accessToken)
+		err = tx.CreateAccessToken(user.Id, *accessToken)
 		if err != nil {
 			return nil, errors.J(err, "creating access token entry failed")
 		}
 
-		return &LoginSuccess{AccessToken: *accessToken}, nil
+		return &LoginSuccess{
+			AccessToken: *accessToken,
+			PublicId:    user.PublicId,
+		}, nil
 	})
 }
 
@@ -99,4 +110,13 @@ func (userService *UserService) generateMagicKey() (*string, error) {
 	}
 
 	return magicKey, nil
+}
+
+func (userService *UserService) generatePublicId() (*string, error) {
+	publicId, err := userService.randomIdService.GenerateRandomId()
+	if err != nil {
+		return nil, errors.J(err, "generateRandomId failed")
+	}
+
+	return publicId, nil
 }

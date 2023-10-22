@@ -8,7 +8,7 @@ import (
 )
 
 func (transaction *Transaction) CreateUsersTable() error {
-	query := "CREATE TABLE users (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, magicKey TEXT NOT NULL UNIQUE)"
+	query := "CREATE TABLE users (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, publicId TEXT NOT NULL UNIQUE, magicKey TEXT NOT NULL UNIQUE)"
 
 	_, err := transaction.Exec(query)
 	if err != nil {
@@ -18,12 +18,12 @@ func (transaction *Transaction) CreateUsersTable() error {
 	return nil
 }
 
-func (transaction *Transaction) CreateUser(magicKey string) (*int64, error) {
-	query := "INSERT INTO users (magicKey) VALUES (?)"
+func (transaction *Transaction) CreateUser(publicId string, magicKey string) (*int64, error) {
+	query := "INSERT INTO users (publicId, magicKey) VALUES (?, ?)"
 
-	result, err := transaction.Exec(query, magicKey)
+	result, err := transaction.Exec(query, publicId, magicKey)
 	if err != nil {
-		return nil, errors.J(err, fmt.Sprintf("insert failed %s", magicKey))
+		return nil, errors.J(err, fmt.Sprintf("insert failed %s, %s", publicId, magicKey))
 	}
 
 	lastIndertedId, err := result.LastInsertId()
@@ -34,18 +34,27 @@ func (transaction *Transaction) CreateUser(magicKey string) (*int64, error) {
 	return &lastIndertedId, nil
 }
 
-func (transaction *Transaction) FindUserForMagicKey(magicKey string) (*int64, error) {
-	query := "SELECT id FROM users WHERE magicKey = ?"
+type UserForMagicKey struct {
+	Id       int64
+	PublicId string
+}
 
-	userIds, err := TxQuery[[]int64](transaction, query, []any{magicKey}, func(rows *sql.Rows) (*[]int64, error) {
-		var userIds []int64
+func (transaction *Transaction) FindUserForMagicKey(magicKey string) (*UserForMagicKey, error) {
+	query := "SELECT (id, publicId) FROM users WHERE magicKey = ?"
+
+	users, err := TxQuery[[]UserForMagicKey](transaction, query, []any{magicKey}, func(rows *sql.Rows) (*[]UserForMagicKey, error) {
+		var users []UserForMagicKey
 		for rows.Next() {
 			var userId int64
-			err := rows.Scan(&userId)
+			var publicId string
+			err := rows.Scan(&userId, &publicId)
 			if err != nil {
 				return nil, errors.J(err, "scanning row failed")
 			}
-			userIds = append(userIds, userId)
+			users = append(users, UserForMagicKey{
+				userId,
+				publicId,
+			})
 		}
 
 		err := rows.Err()
@@ -53,21 +62,21 @@ func (transaction *Transaction) FindUserForMagicKey(magicKey string) (*int64, er
 			return nil, errors.J(err, "rows returned error")
 		}
 
-		return &userIds, nil
+		return &users, nil
 	})
 
 	if err != nil {
 		return nil, errors.J(err, "txQuery failed")
 	}
 
-	switch len(*userIds) {
+	switch len(*users) {
 	case 0:
 		return nil, nil
 	case 1:
-		firstUserId := (*userIds)[0]
+		firstUserId := (*users)[0]
 		return &firstUserId, nil
 	default:
-		firstUserId := (*userIds)[0]
+		firstUserId := (*users)[0]
 		return &firstUserId, errors.E("multiple users found for magic key, which is unexpected")
 	}
 }
