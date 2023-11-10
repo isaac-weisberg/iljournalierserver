@@ -18,6 +18,10 @@ github.com/isaac-weisberg/go-jason v0.3.2 h1:aNrW8OjwVlfe1wP0YtCEEvCRlc39e6RRURG
 github.com/isaac-weisberg/go-jason v0.3.2/go.mod h1:DNi0GeY9LwV5eG85WMScXA6CRZgTzWWAcplnZWiE6zk=
 github.com/isaac-weisberg/go-jason v0.3.3 h1:kIp7fRyGuZLqk71zyanPcpAlKP5fl9eH03C6s+fjrD0=
 github.com/isaac-weisberg/go-jason v0.3.3/go.mod h1:DNi0GeY9LwV5eG85WMScXA6CRZgTzWWAcplnZWiE6zk=
+github.com/isaac-weisberg/go-jason v0.3.4 h1:Y2aX53x69G3NTQ8KjpAKdz9gSDQXwjBuPNuNcvvn22k=
+github.com/isaac-weisberg/go-jason v0.3.4/go.mod h1:DNi0GeY9LwV5eG85WMScXA6CRZgTzWWAcplnZWiE6zk=
+github.com/isaac-weisberg/go-jason v0.3.5 h1:tkJiemPr2lZ014kjXO/QJF8bzwq4Go4iW/7gfVZCeAs=
+github.com/isaac-weisberg/go-jason v0.3.5/go.mod h1:DNi0GeY9LwV5eG85WMScXA6CRZgTzWWAcplnZWiE6zk=
 github.com/leodido/go-urn v1.2.4 h1:XlAE/cm/ms7TE/VMVoduSpNBoyc2dOxHs5MZSwAN63Q=
 github.com/leodido/go-urn v1.2.4/go.mod h1:7ZrI8mTSeBSHl/UaRyKQW1qZeMgak41ANeCNaVckg+4=
 github.com/mattn/go-sqlite3 v1.14.18 h1:JL0eqdCOq6DJVNPSvArO/bIV9/P7fbGrV00LZHc+5aI=
