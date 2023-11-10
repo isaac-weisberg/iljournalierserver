@@ -20,6 +20,7 @@ type CreateUserSuccess struct {
 	AccessToken string
 	MagicKey    string
 	PublicId    string
+	Iv          string
 }
 
 func (userService *UserService) CreateUser(ctx context.Context) (*CreateUserSuccess, error) {
@@ -38,12 +39,17 @@ func (userService *UserService) CreateUser(ctx context.Context) (*CreateUserSucc
 		return nil, errors.J(err, "generate accessToken failed")
 	}
 
+	iv, err := userService.generateIv()
+	if err != nil {
+		return nil, errors.J(err, "generate iv failed")
+	}
+
 	return BeginTxBlock[CreateUserSuccess](userService.dbService, ctx, func(tx *transaction.Transaction) (*CreateUserSuccess, error) {
 		if err != nil {
 			return nil, errors.J(err, "start tx failed")
 		}
 
-		userId, err := tx.CreateUser(*publicUserId, *magicKey)
+		userId, err := tx.CreateUser(*publicUserId, *magicKey, *iv)
 		if err != nil {
 			return nil, errors.J(err, "create user failed")
 		}
@@ -57,6 +63,7 @@ func (userService *UserService) CreateUser(ctx context.Context) (*CreateUserSucc
 			AccessToken: *accessToken,
 			MagicKey:    *magicKey,
 			PublicId:    *publicUserId,
+			Iv:          *iv,
 		}, nil
 	})
 }
@@ -64,6 +71,7 @@ func (userService *UserService) CreateUser(ctx context.Context) (*CreateUserSucc
 type LoginSuccess struct {
 	AccessToken string
 	PublicId    string
+	Iv          string
 }
 
 func (userService *UserService) Login(magicKey string, ctx context.Context) (*LoginSuccess, error) {
@@ -90,6 +98,7 @@ func (userService *UserService) Login(magicKey string, ctx context.Context) (*Lo
 		return &LoginSuccess{
 			AccessToken: *accessToken,
 			PublicId:    user.PublicId,
+			Iv:          user.Iv,
 		}, nil
 	})
 }
@@ -101,6 +110,15 @@ func (userService *UserService) generateAccessToken() (*string, error) {
 	}
 
 	return accessToken, nil
+}
+
+func (userService *UserService) generateIv() (*string, error) {
+	iv, err := userService.randomIdService.GenerateRandomId()
+	if err != nil {
+		return nil, errors.J(err, "generateIv failed")
+	}
+
+	return iv, nil
 }
 
 func (userService *UserService) generateMagicKey() (*string, error) {

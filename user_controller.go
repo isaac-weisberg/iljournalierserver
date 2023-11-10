@@ -20,6 +20,7 @@ type createUserResponseBody struct {
 	accessTokenHavingLegacy
 	LoginKey string `json:"loginKey" validate:"required"`
 	PublicId string `json:"publicId" validate:"required"`
+	Iv       string `json:"iv" validate:"required"`
 }
 
 func (uc *userController) createUser(ctx context.Context) (*createUserResponseBody, error) {
@@ -35,6 +36,7 @@ func (uc *userController) createUser(ctx context.Context) (*createUserResponseBo
 		},
 		LoginKey: user.MagicKey,
 		PublicId: user.PublicId,
+		Iv:       user.Iv,
 	}
 
 	return &createUserResBody, nil
@@ -49,6 +51,7 @@ type loginRequestBody struct {
 type loginResponseBody struct {
 	accessTokenHavingLegacy
 	PublicId string `json:"publicId"`
+	Iv       string `json:"iv"`
 }
 
 func (uc *userController) login(ctx context.Context, loginRequestBody *loginRequestBody) (*loginResponseBody, error) {
@@ -62,6 +65,7 @@ func (uc *userController) login(ctx context.Context, loginRequestBody *loginRequ
 			AccessToken: loginSuccess.AccessToken,
 		},
 		loginSuccess.PublicId,
+		loginSuccess.Iv,
 	}
 
 	return &response, nil
