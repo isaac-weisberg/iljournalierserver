@@ -41,7 +41,7 @@ type UserForMagicKey struct {
 }
 
 func (transaction *Transaction) FindUserForMagicKey(magicKey string) (*UserForMagicKey, error) {
-	query := "SELECT (id, publicId, iv) FROM users WHERE magicKey = ?"
+	query := "SELECT id, publicId, iv FROM users WHERE magicKey = ?"
 
 	users, err := TxQuery[[]UserForMagicKey](transaction, query, []any{magicKey}, func(rows *sql.Rows) (*[]UserForMagicKey, error) {
 		var users []UserForMagicKey
